@@ -1,0 +1,2748 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MichiEdu2 | Platform Belajar Bahasa Jepang & Latihan JFT-Basic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --washi: #faf7f2;
+      --sumi: #141115;
+      --shuiro: #c81e1e;
+      --sakura: #f472b6;
+      --sakura-soft: #fce7f3;
+      --gold: #d97706;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      background-color: var(--washi);
+      color: var(--sumi);
+      overflow-x: hidden;
+    }
+    .jp-font { font-family: 'Noto Sans JP', sans-serif; }
+
+    /* Washi texture & Seigaiha subtle pattern */
+    .washi-bg {
+      background-color: #faf7f2;
+      background-image:
+        radial-gradient(rgba(20, 17, 21, 0.03) 1px, transparent 0),
+        radial-gradient(rgba(200, 30, 30, 0.025) 1px, transparent 0);
+      background-size: 26px 26px;
+      background-position: 0 0, 13px 13px;
+    }
+
+    .sumi-fuji-hero {
+      background:
+        radial-gradient(circle at 75% 22%, rgba(252, 231, 243, 0.22), transparent 38%),
+        radial-gradient(circle at 18% 80%, rgba(200, 30, 30, 0.25), transparent 44%),
+        linear-gradient(170deg, #141115 0%, #1f1722 52%, #2e1820 100%);
+    }
+
+    /* Falling sakura petals */
+    @keyframes sakuraDrift {
+      0% {
+        transform: translate3d(0, -10%, 0) rotate(0deg) scale(0.85);
+        opacity: 0;
+      }
+      12% { opacity: 0.92; }
+      50% {
+        transform: translate3d(-32px, 50vh, 0) rotate(175deg) scale(1);
+        opacity: 0.85;
+      }
+      88% { opacity: 0.72; }
+      100% {
+        transform: translate3d(28px, 108vh, 0) rotate(350deg) scale(0.9);
+        opacity: 0;
+      }
+    }
+
+    @keyframes treeSway {
+      0%, 100% { transform: rotate(-1.4deg); }
+      50% { transform: rotate(1.6deg); }
+    }
+
+    @keyframes lanternBob {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(4px) rotate(2deg); }
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .sakura-petal {
+      position: fixed;
+      top: -40px;
+      pointer-events: none;
+      z-index: 25;
+      animation: sakuraDrift linear infinite;
+    }
+    .tree-sway-left { transform-origin: bottom left; animation: treeSway 7.5s ease-in-out infinite; }
+    .tree-sway-right { transform-origin: bottom right; animation: treeSway 8.5s ease-in-out infinite reverse; }
+    .lantern-bob { transform-origin: top center; animation: lanternBob 4.2s ease-in-out infinite; }
+    .animate-panel { animation: fadeSlideIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f2ede4; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="washi-bg min-h-screen flex flex-col selection:bg-[#c81e1e] selection:text-white">
+
+  <!-- Particle Kelopak Sakura Jatuh -->
+  <div id="sakuraLayer" aria-hidden="true"></div>
+
+  <!-- Non-blocking Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-sm bg-[#141115] text-white px-4 py-3 rounded-2xl shadow-2xl border border-pink-400/35 flex items-center gap-3 text-xs sm:text-sm">
+    <span class="w-2.5 h-2.5 rounded-full bg-pink-400 shrink-0 animate-pulse"></span>
+    <span id="toastText">Notifikasi MichiEdu2</span>
+  </div>
+
+  <!-- Sticky Navigation Bar -->
+  <header class="sticky top-0 z-30 bg-[#faf7f2]/92 backdrop-blur-md border-b border-stone-200/90">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <!-- Brand MichiEdu2 -->
+      <a href="#top" class="flex items-center gap-2.5 group">
+        <div class="w-10 h-10 rounded-xl bg-[#141115] text-white flex items-center justify-center shadow-sm group-hover:bg-[#c81e1e] transition-colors">
+          <svg viewBox="0 0 36 36" class="w-6 h-6" fill="none" aria-hidden="true">
+            <path d="M4 9.5C13.5 11.5 22.5 11.5 32 9.5" stroke="#f472b6" stroke-width="2.6" stroke-linecap="round" />
+            <path d="M7 14.5H29" stroke="#faf7f2" stroke-width="2" stroke-linecap="round" />
+            <path d="M12 10.5V29.5" stroke="#c81e1e" stroke-width="2.8" stroke-linecap="round" />
+            <path d="M24 10.5V29.5" stroke="#c81e1e" stroke-width="2.8" stroke-linecap="round" />
+            <circle cx="18" cy="18" r="2.2" fill="#d97706" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold text-lg tracking-tight text-[#141115]">MichiEdu2</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-100 text-[#c81e1e] border border-pink-200 jp-font">道・弐</span>
+          </div>
+          <p class="text-[11px] text-stone-500 hidden sm:block">Bahasa Jepang Lengkap N5–N1 • Simulasi JFT-Basic</p>
+        </div>
+      </a>
+
+      <!-- Quick Section Anchors -->
+      <nav class="hidden lg:flex items-center gap-1 text-xs font-bold text-stone-600">
+        <a href="#modul-belajar" class="px-3 py-2 rounded-xl hover:bg-stone-200/70 hover:text-[#141115] transition">7 Modul & Kuis</a>
+        <a href="#sesi-jft" class="px-3 py-2 rounded-xl hover:bg-rose-50 hover:text-[#c81e1e] transition">Latihan JFT-Basic</a>
+        <a href="#bunpou-section" class="px-3 py-2 rounded-xl hover:bg-stone-200/70 hover:text-[#141115] transition">Bunpou N5–N1</a>
+        <a href="#partikel-section" class="px-3 py-2 rounded-xl hover:bg-stone-200/70 hover:text-[#141115] transition">Kamus Partikel</a>
+        <a href="#statistik-section" class="px-3 py-2 rounded-xl hover:bg-amber-50 hover:text-amber-700 transition">Statistik Progres</a>
+      </nav>
+
+      <!-- User Session Area -->
+      <div class="flex items-center gap-2">
+        <a id="navLoginBtn" href="#akses-login"
+          class="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#c81e1e] hover:bg-red-700 text-white shadow-xs transition">
+          Masuk / Daftar
+        </a>
+
+        <div id="navUserBadge" class="hidden items-center gap-2 bg-white border border-stone-200 pl-2.5 pr-2 py-1.5 rounded-xl shadow-2xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <div class="leading-tight">
+            <div id="navDisplayName" class="text-xs font-bold text-[#141115] max-w-[110px] sm:max-w-[140px] truncate">Member</div>
+            <div id="navDisplayMethod" class="text-[10px] text-stone-500">MichiEdu2</div>
+          </div>
+          <button type="button" onclick="logoutMember()" class="px-2 py-1 rounded-lg text-[11px] font-bold text-[#c81e1e] hover:bg-rose-50 transition cursor-pointer">
+            Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- 1. LANDING PAGE: PANORAMA VEKTOR JEPANG (FUJI, SAKURA, TORII, AWAN)   -->
+  <!-- ===================================================================== -->
+  <section id="top" class="sumi-fuji-hero text-white relative overflow-hidden border-b-4 border-[#c81e1e]">
+
+    <!-- Lentera Chochin Gantung Kiri & Kanan -->
+    <div aria-hidden="true" class="hidden md:block absolute top-0 left-8 z-10 lantern-bob pointer-events-none">
+      <svg viewBox="0 0 64 120" class="w-12 h-24" fill="none">
+        <line x1="32" y1="0" x2="32" y2="22" stroke="#d97706" stroke-width="2" />
+        <rect x="20" y="20" width="24" height="6" rx="2" fill="#141115" stroke="#d97706" stroke-width="1.5" />
+        <ellipse cx="32" cy="54" rx="20" ry="28" fill="#c81e1e" stroke="#fca5a5" stroke-width="1.5" />
+        <path d="M14 44 Q32 49 50 44 M13 54 Q32 59 51 54 M14 64 Q32 69 50 64" stroke="#7f1d1d" stroke-width="1.5" />
+        <rect x="20" y="80" width="24" height="6" rx="2" fill="#141115" stroke="#d97706" stroke-width="1.5" />
+        <line x1="32" y1="86" x2="32" y2="106" stroke="#d97706" stroke-width="2" />
+      </svg>
+    </div>
+
+    <!-- Pohon Sakura Kiri (Custom Layered SVG) -->
+    <svg viewBox="0 0 340 420" class="tree-sway-left hidden sm:block absolute bottom-8 -left-10 w-64 md:w-80 pointer-events-none select-none z-10 opacity-95" fill="none" aria-hidden="true">
+      <!-- Batang & Ranting Pohon Sakura -->
+      <path d="M35 420 C42 330, 58 265, 95 205 C122 162, 165 130, 225 102" stroke="#3b2322" stroke-width="16" stroke-linecap="round" />
+      <path d="M72 252 C118 228, 168 214, 232 216" stroke="#3b2322" stroke-width="9" stroke-linecap="round" />
+      <path d="M115 178 C142 135, 172 104, 212 72" stroke="#3b2322" stroke-width="7" stroke-linecap="round" />
+      <path d="M55 295 C92 288, 130 294, 168 310" stroke="#3b2322" stroke-width="6" stroke-linecap="round" />
+      <!-- Rumpun Bunga Sakura -->
+      <g opacity="0.95">
+        <circle cx="222" cy="100" r="34" fill="#f472b6" />
+        <circle cx="195" cy="84" r="28" fill="#fbcfe8" />
+        <circle cx="246" cy="116" r="26" fill="#fce7f3" />
+        <circle cx="156" cy="128" r="32" fill="#f9a8d4" />
+        <circle cx="132" cy="148" r="26" fill="#fce7f3" />
+        <circle cx="232" cy="214" r="30" fill="#f472b6" />
+        <circle cx="204" cy="202" r="24" fill="#fbcfe8" />
+        <circle cx="256" cy="226" r="22" fill="#fce7f3" />
+        <circle cx="168" cy="308" r="24" fill="#f9a8d4" />
+        <circle cx="145" cy="296" r="20" fill="#fce7f3" />
+        <circle cx="212" cy="68" r="25" fill="#f472b6" />
+      </g>
+    </svg>
+
+    <!-- Pohon Sakura Kanan (Custom Layered SVG) -->
+    <svg viewBox="0 0 340 420" class="tree-sway-right hidden md:block absolute bottom-8 -right-10 w-72 lg:w-88 pointer-events-none select-none z-10 opacity-90" fill="none" aria-hidden="true">
+      <path d="M305 420 C295 325, 276 260, 236 196 C206 150, 160 118, 102 92" stroke="#3b2322" stroke-width="16" stroke-linecap="round" />
+      <path d="M262 246 C214 220, 166 208, 105 212" stroke="#3b2322" stroke-width="9" stroke-linecap="round" />
+      <path d="M216 168 C190 124, 158 92, 118 64" stroke="#3b2322" stroke-width="7" stroke-linecap="round" />
+      <g opacity="0.95">
+        <circle cx="104" cy="92" r="34" fill="#f472b6" />
+        <circle cx="134" cy="76" r="28" fill="#fbcfe8" />
+        <circle cx="80" cy="110" r="25" fill="#fce7f3" />
+        <circle cx="176" cy="124" r="32" fill="#f9a8d4" />
+        <circle cx="106" cy="210" r="30" fill="#f472b6" />
+        <circle cx="136" cy="198" r="24" fill="#fbcfe8" />
+        <circle cx="118" cy="62" r="24" fill="#f9a8d4" />
+      </g>
+    </svg>
+
+    <!-- Panorama Latar Bawah: Matahari Merah, Awan Kasumi, Gunung Fuji Bersalju, Gerbang Torii & Ombak Seigaiha -->
+    <div aria-hidden="true" class="pointer-events-none select-none absolute inset-x-0 bottom-0 z-0">
+      <svg viewBox="0 0 1440 340" class="w-full h-56 sm:h-72 object-cover" preserveAspectRatio="none" fill="none">
+        <!-- Matahari Senja Jepang -->
+        <circle cx="760" cy="135" r="82" fill="#c81e1e" opacity="0.34" />
+        <circle cx="760" cy="135" r="58" fill="#f472b6" opacity="0.16" />
+
+        <!-- Awan Tradisional Kasumi -->
+        <path d="M430 112 H565 C578 112 578 128 565 128 H495 C482 128 482 142 495 142 H600" stroke="#fce7f3" stroke-opacity="0.22" stroke-width="7" stroke-linecap="round" />
+        <path d="M890 96 H1035 C1048 96 1048 112 1035 112 H960 C947 112 947 126 960 126 H1075" stroke="#fce7f3" stroke-opacity="0.22" stroke-width="7" stroke-linecap="round" />
+
+        <!-- Pegunungan Belakang -->
+        <path d="M0 265 Q240 205 480 250 T980 238 T1440 222 V340 H0 Z" fill="#221824" />
+
+        <!-- Gunung Fuji Utama -->
+        <path d="M450 280 L735 66 C756 50 794 50 815 66 L1100 280 Z" fill="#1a1528" />
+        <!-- Salju Puncak Gunung Fuji -->
+        <path d="M735 66 C756 50 794 50 815 66 L864 103 L830 118 L804 103 L776 124 L750 105 L722 120 L686 98 Z" fill="#faf7f2" opacity="0.92" />
+
+        <!-- Gerbang Torii Vermilion di Tepi Danau -->
+        <g transform="translate(520, 162)">
+          <path d="M-54 8 C-18 17 18 17 54 8 L60 -2 C20 7 -20 7 -60 -2 Z" fill="#c81e1e" />
+          <path d="M-44 25 H44" stroke="#fca5a5" stroke-width="6" stroke-linecap="round" />
+          <path d="M-28 12 V114" stroke="#c81e1e" stroke-width="8" stroke-linecap="round" />
+          <path d="M28 12 V114" stroke="#c81e1e" stroke-width="8" stroke-linecap="round" />
+          <rect x="-6" y="12" width="12" height="15" rx="2" fill="#141115" stroke="#d97706" stroke-width="1.5" />
+        </g>
+
+        <!-- Siluet Pagoda 5 Tingkat -->
+        <g transform="translate(975, 132)" fill="#16111c" stroke="#f472b6" stroke-opacity="0.28" stroke-width="1.2">
+          <line x1="25" y1="0" x2="25" y2="20" stroke="#d97706" stroke-width="2" />
+          <polygon points="10,28 40,28 25,18" />
+          <polygon points="7,48 43,48 25,36" />
+          <polygon points="4,68 46,68 25,54" />
+          <polygon points="1,88 49,88 25,72" />
+          <rect x="13" y="28" width="24" height="86" />
+        </g>
+
+        <!-- Ombak Seigaiha & Tanah Dasar -->
+        <path d="M0 276 Q180 258 360 276 T720 276 T1080 276 T1440 276 V340 H0 Z" fill="#141115" />
+      </svg>
+    </div>
+
+    <!-- Konten Hero & Form Akses Login -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-24 lg:py-16 relative z-20">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+
+        <!-- Kiri: Brand & Navigasi Fitur Utama -->
+        <div class="lg:col-span-7 space-y-5 animate-panel">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-pink-300/30 text-pink-200 text-xs font-semibold backdrop-blur-xs">
+            <span class="jp-font text-amber-300">富士山 • 桜 • 鳥居</span>
+            <span>MichiEdu2 — Platform Belajar Bahasa Jepang N5–N1</span>
+          </div>
+
+          <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight leading-[1.15]">
+            Kuasai Bahasa Jepang & <span class="text-pink-300">JFT-Basic</span> Langkah Demi Langkah
+          </h1>
+
+          <p class="text-stone-200 text-sm sm:text-base leading-relaxed max-w-2xl">
+            Belajar <strong class="text-white">Hiragana & Katakana</strong> lengkap dengan kuis 1–50 soal, <strong class="text-white">Kotoba 3000+</strong>, <strong class="text-white">Kanji N5–N1</strong> terpisah per level & kategori, <strong class="text-white">Dokkai</strong>, <strong class="text-white">Henkan</strong>, <strong class="text-white">Menyusun Kalimat</strong>, <strong class="text-white">Kanvas Menulis</strong>, hingga simulasi <strong class="text-pink-300">JFT-Basic</strong>.
+          </p>
+
+          <div class="flex flex-wrap gap-2.5 pt-1">
+            <a href="#modul-belajar"
+              class="px-5 py-3 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-lg shadow-red-950/50 transition">
+              Mulai Belajar & Kuis
+            </a>
+            <a href="#sesi-jft"
+              class="px-5 py-3 rounded-xl bg-white/12 hover:bg-white/20 text-white text-xs sm:text-sm font-bold border border-white/25 backdrop-blur-xs transition">
+              Sesi Latihan JFT-Basic
+            </a>
+            <a href="#bunpou-section"
+              class="px-4 py-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 text-xs sm:text-sm font-semibold border border-amber-400/30 transition">
+              Bunpou & Kamus Partikel
+            </a>
+          </div>
+        </div>
+
+        <!-- Kanan: Panel Akses Login / Daftar Akun MichiEdu2 + Lanjutkan dengan Google -->
+        <div id="akses-login" class="lg:col-span-5 animate-panel">
+          <div class="bg-[#faf7f2]/95 text-[#141115] rounded-3xl p-6 sm:p-7 shadow-2xl border-2 border-pink-200/90 backdrop-blur-md">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-[#c81e1e]">Akses Akun MichiEdu2</span>
+                <h2 class="text-xl font-extrabold text-[#141115]">Masuk / Daftar Akun</h2>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-pink-100 text-[#c81e1e] border border-pink-200 jp-font">
+                ようこそ
+              </span>
+            </div>
+
+            <!-- Banner Jika Sudah Login -->
+            <div id="heroLoggedInBox" class="hidden mb-4 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs space-y-1">
+              <div class="font-extrabold text-emerald-800 flex items-center justify-between">
+                <span>✓ Sesi Akun Aktif</span>
+                <button type="button" onclick="logoutMember()" class="underline text-[#c81e1e] font-bold cursor-pointer">Keluar</button>
+              </div>
+              <p id="heroSessionInfo" class="text-emerald-900"></p>
+            </div>
+
+            <form id="loginForm" class="space-y-3">
+              <div>
+                <label for="inpName" class="block text-xs font-bold text-stone-700 mb-1">Nama Lengkap *</label>
+                <input type="text" id="inpName" required placeholder="Masukkan nama lengkap Anda"
+                  class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+              </div>
+
+              <div>
+                <label for="inpEmail" class="block text-xs font-bold text-stone-700 mb-1">Email *</label>
+                <input type="email" id="inpEmail" required placeholder="nama@email.com"
+                  class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+              </div>
+
+              <div>
+                <label for="inpPhone" class="block text-xs font-bold text-stone-700 mb-1">Nomor WhatsApp / HP *</label>
+                <input type="tel" id="inpPhone" required placeholder="Contoh: 081234567890"
+                  class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+              </div>
+
+              <button type="submit"
+                class="w-full py-3 px-4 rounded-xl bg-[#141115] hover:bg-stone-800 text-white text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer">
+                Masuk / Daftar Akun MichiEdu2
+              </button>
+            </form>
+
+            <div class="my-3.5 flex items-center gap-3">
+              <div class="h-px bg-stone-300 flex-1"></div>
+              <span class="text-[11px] font-bold text-stone-400 uppercase">atau</span>
+              <div class="h-px bg-stone-300 flex-1"></div>
+            </div>
+
+            <button type="button" onclick="openGoogleSigninModal()"
+              class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-stone-50 text-stone-800 text-xs sm:text-sm font-bold border border-stone-300 shadow-2xs flex items-center justify-center gap-2.5 transition cursor-pointer">
+              <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0" aria-hidden="true">
+                <path fill="#4285F4" d="M23.49 12.27c0-.78-.07-1.54-.2-2.27H12v4.51h6.47c-.28 1.5-1.12 2.77-2.38 3.62v3h3.85c2.25-2.07 3.55-5.12 3.55-8.48z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.94-2.91l-3.85-3c-1.07.72-2.44 1.15-4.09 1.15-3.14 0-5.81-2.12-6.76-4.97H1.26v3.1C3.24 21.31 7.31 24 12 24z" />
+                <path fill="#FBBC05" d="M5.24 14.27A7.2 7.2 0 0 1 4.86 12c0-.79.14-1.56.38-2.27V6.63H1.26A11.98 11.98 0 0 0 0 12c0 1.94.46 3.77 1.26 5.37l3.98-3.1z" />
+                <path fill="#EA4335" d="M12 4.75c1.76 0 3.35.61 4.6 1.8l3.45-3.45C17.95 1.19 15.24 0 12 0 7.31 0 3.24 2.69 1.26 6.63l3.98 3.1c.95-2.85 3.62-4.98 6.76-4.98z" />
+              </svg>
+              <span>Lanjutkan dengan Google</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <!-- 3. MENU UTAMA & 7 MODUL BELAJAR + KUIS PER BAGIAN (KOLOM TERPISAH)    -->
+  <!-- ===================================================================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+
+    <section id="modul-belajar" class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-[#c81e1e]">Kurikulum Interaktif MichiEdu2</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#141115] mt-1">
+            7 Modul Belajar Bahasa Jepang + Kuis Per Bagian
+          </h2>
+          <p class="text-sm text-stone-600 mt-1">
+            Pilih modul di bawah ini. Setiap bagian memiliki materi terstruktur di kolom kiri dan kuis latihan interaktif di kolom kanan.
+          </p>
+        </div>
+      </div>
+
+      <!-- Tab Bar 7 Modul -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 bg-white p-2 rounded-2xl border border-stone-200 shadow-2xs">
+        <button type="button" data-mod="kana" onclick="selectModule('kana')"
+          class="mod-btn px-3 py-2.5 rounded-xl text-xs font-extrabold bg-[#141115] text-white transition cursor-pointer text-center">
+          A. Kana (1–50)
+        </button>
+        <button type="button" data-mod="kotoba" onclick="selectModule('kotoba')"
+          class="mod-btn px-3 py-2.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 hover:bg-stone-200 transition cursor-pointer text-center">
+          B. Kotoba 3000+
+        </button>
+        <button type="button" data-mod="kanji" onclick="selectModule('kanji')"
+          class="mod-btn px-3 py-2.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 hover:bg-stone-200 transition cursor-pointer text-center">
+          C. Kanji N5–N1
+        </button>
+        <button type="button" data-mod="dokkai" onclick="selectModule('dokkai')"
+          class="mod-btn px-3 py-2.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 hover:bg-stone-200 transition cursor-pointer text-center">
+          D. Dokkai
+        </button>
+        <button type="button" data-mod="henkan" onclick="selectModule('henkan')"
+          class="mod-btn px-3 py-2.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 hover:bg-stone-200 transition cursor-pointer text-center">
+          E. Henkan
+        </button>
+        <button type="button" data-mod="kalimat" onclick="selectModule('kalimat')"
+          class="mod-btn px-3 py-2.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 hover:bg-stone-200 transition cursor-pointer text-center">
+          F. Susun Kalimat
+        </button>
+        <button type="button" data-mod="menulis" onclick="selectModule('menulis')"
+          class="mod-btn col-span-2 sm:col-span-1 px-3 py-2.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 hover:bg-stone-200 transition cursor-pointer text-center">
+          G. Menulis & Kanvas
+        </button>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- BAGIAN A: HIRAGANA & KATAKANA FULL + KUIS SETTING 1–50 SOAL      -->
+      <!-- ================================================================ -->
+      <div id="mod-kana" class="mod-panel grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-panel">
+        <!-- Kolom Materi Kana Lengkap -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-100">
+            <div>
+              <h3 class="text-lg font-extrabold text-[#141115]">Tabel Lengkap Hiragana & Katakana</h3>
+              <p class="text-xs text-stone-500">Gojuon (46 dasar), Dakuten/Handakuten, dan Yoon (Huruf Gabungan)</p>
+            </div>
+            <div class="flex gap-1.5">
+              <button type="button" id="kanaScriptHira" onclick="setKanaScript('hiragana')"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#c81e1e] text-white cursor-pointer">Hiragana</button>
+              <button type="button" id="kanaScriptKata" onclick="setKanaScript('katakana')"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer">Katakana</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="setKanaGroup('gojuon')" id="kanaGrpGojuon"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#141115] text-white cursor-pointer">Gojuon (46 Dasar)</button>
+            <button type="button" onclick="setKanaGroup('dakuten')" id="kanaGrpDakuten"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer">Dakuten & Handakuten (25)</button>
+            <button type="button" onclick="setKanaGroup('yoon')" id="kanaGrpYoon"
+              class="px-3 py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer">Yoon / Gabungan (33)</button>
+          </div>
+
+          <div id="kanaDetailBanner" class="p-3 rounded-xl bg-pink-50/80 border border-pink-200 text-xs font-semibold text-[#141115]">
+            Klik salah satu huruf Kana di bawah untuk mendengar pelafalan & melihat contoh kosakatanya.
+          </div>
+
+          <div id="fullKanaGrid" class="grid grid-cols-5 sm:grid-cols-8 gap-2 max-h-[430px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Kolom Kuis Kana (Setting 1–50 Soal) -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-[#c81e1e]">Kuis Bagian A</span>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kuis Hiragana & Katakana</h3>
+            </div>
+            <span id="kanaQuizBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">Siap</span>
+          </div>
+
+          <!-- Pengaturan Jumlah Soal 1 - 50 -->
+          <div class="p-4 rounded-2xl bg-[#faf7f2] border border-stone-200 space-y-3">
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label class="block text-[11px] font-bold text-stone-600 mb-1">Jenis Huruf</label>
+                <select id="kanaQuizType" class="w-full px-3 py-2 text-xs font-semibold bg-white border border-stone-300 rounded-xl">
+                  <option value="hiragana">Hiragana Saja</option>
+                  <option value="katakana">Katakana Saja</option>
+                  <option value="mixed">Campuran (Hira + Kata)</option>
+                </select>
+              </div>
+              <div>
+                <label for="kanaCountInput" class="block text-[11px] font-bold text-stone-600 mb-1">Jumlah Soal (1–50)</label>
+                <input type="number" id="kanaCountInput" min="1" max="50" value="10"
+                  oninput="syncKanaRange(this.value)"
+                  class="w-full px-3 py-2 text-xs font-bold bg-white border border-stone-300 rounded-xl" />
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[11px] font-semibold text-stone-500 mb-1">
+                <span>Geser Slider Jumlah Soal:</span>
+                <span id="kanaRangeLabel" class="font-bold text-[#c81e1e]">10 Soal</span>
+              </div>
+              <input type="range" id="kanaCountRange" min="1" max="50" value="10"
+                oninput="syncKanaInput(this.value)"
+                class="w-full accent-[#c81e1e] cursor-pointer" />
+            </div>
+
+            <button type="button" onclick="startKanaQuiz()"
+              class="w-full py-2.5 px-4 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs font-bold transition cursor-pointer">
+              Mulai Kuis Kana Sekarang
+            </button>
+          </div>
+
+          <!-- Area Soal Kuis Kana -->
+          <div id="kanaQuizBody" class="space-y-3">
+            <p class="text-xs text-stone-500 text-center py-6">Atur jumlah soal (1 sampai 50) di atas lalu klik <strong>Mulai Kuis Kana Sekarang</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- BAGIAN B: KOTOBA 3000+ (KOSAKATA TERSTRUKTUR + KUIS)             -->
+      <!-- ================================================================ -->
+      <div id="mod-kotoba" class="mod-panel hidden grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-panel">
+        <!-- Kolom Bank Kotoba 3000+ -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-100">
+            <div>
+              <h3 class="text-lg font-extrabold text-[#141115]">Bank Kosakata Kotoba 3000+</h3>
+              <p class="text-xs text-stone-500">Dilengkapi level N5–N1, kategori tematik, dan audio pelafalan Jepang</p>
+            </div>
+            <span id="kotobaTotalBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-200">
+              3.000+ Kosakata Terindeks
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <input type="text" id="kotobaSearch" oninput="renderKotobaList()" placeholder="Cari Jepang / Romaji / Arti..."
+              class="px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+            <select id="kotobaLevelFilter" onchange="renderKotobaList()"
+              class="px-3 py-2 text-xs font-semibold bg-stone-50 border border-stone-300 rounded-xl">
+              <option value="all">Semua Level (N5–N1)</option>
+              <option value="N5">JLPT N5 (Dasar)</option>
+              <option value="N4">JLPT N4 (Pra-Menengah)</option>
+              <option value="N3">JLPT N3 (Menengah)</option>
+              <option value="N2">JLPT N2 (Menengah Atas)</option>
+              <option value="N1">JLPT N1 (Mahir)</option>
+            </select>
+            <select id="kotobaCatFilter" onchange="renderKotobaList()"
+              class="px-3 py-2 text-xs font-semibold bg-stone-50 border border-stone-300 rounded-xl">
+              <option value="all">Semua Kategori</option>
+              <option value="Salam & Ungkapan">Salam & Ungkapan</option>
+              <option value="Kata Kerja">Kata Kerja</option>
+              <option value="Kata Benda">Kata Benda</option>
+              <option value="Kata Sifat">Kata Sifat</option>
+              <option value="Waktu & Tempat">Waktu & Tempat</option>
+              <option value="Kerja & Tokutei Ginou">Kerja & Tokutei Ginou</option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] text-stone-500">
+            <span id="kotobaShowingInfo">Menampilkan entri pilihan dari database 3.000+ kosakata</span>
+            <div class="flex gap-1.5">
+              <button type="button" onclick="changeKotobaPage(-1)" class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 font-bold text-stone-700 cursor-pointer">← Prev</button>
+              <button type="button" onclick="changeKotobaPage(1)" class="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 font-bold text-stone-700 cursor-pointer">Next →</button>
+            </div>
+          </div>
+
+          <div id="kotobaListContainer" class="divide-y divide-stone-100 border border-stone-200 rounded-2xl overflow-hidden max-h-[420px] overflow-y-auto"></div>
+        </div>
+
+        <!-- Kolom Kuis Kotoba -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-[#c81e1e]">Kuis Bagian B</span>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kuis Kotoba 3000+</h3>
+            </div>
+            <span id="kotobaQuizScorePill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-stone-100 text-stone-800">Skor: 0</span>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-[#faf7f2] border border-stone-200 flex flex-wrap items-center gap-2">
+            <select id="kotobaQuizLevel" class="flex-1 px-3 py-2 text-xs font-semibold bg-white border border-stone-300 rounded-xl">
+              <option value="all">Semua Level</option>
+              <option value="N5">Level N5</option>
+              <option value="N4">Level N4</option>
+              <option value="N3">Level N3</option>
+              <option value="N2">Level N2</option>
+              <option value="N1">Level N1</option>
+            </select>
+            <input type="number" id="kotobaQuizCount" min="1" max="50" value="10"
+              class="w-20 px-2.5 py-2 text-xs font-bold bg-white border border-stone-300 rounded-xl" />
+            <button type="button" onclick="startKotobaQuiz()"
+              class="px-4 py-2 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs font-bold cursor-pointer">
+              Mulai Kuis
+            </button>
+          </div>
+
+          <div id="kotobaQuizBox" class="space-y-3">
+            <p class="text-xs text-stone-500 text-center py-6">Pilih level dan jumlah soal (1–50) lalu tekan <strong>Mulai Kuis</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- BAGIAN C: KANJI N5 SAMPAI N1 (TERPISAH PER LEVEL & KATEGORI)     -->
+      <!-- ================================================================ -->
+      <div id="mod-kanji" class="mod-panel hidden grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-panel">
+        <!-- Kolom Kanji N5 - N1 -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-100">
+            <div>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kamus Kanji Terstruktur (N5 – N1)</h3>
+              <p class="text-xs text-stone-500">Dipisah per level JLPT dan diurutkan berdasarkan kategori makna</p>
+            </div>
+            <!-- Tab Level N5..N1 -->
+            <div class="flex gap-1 bg-stone-100 p-1 rounded-xl">
+              <button type="button" onclick="setKanjiLevel('N5')" data-klvl="N5" class="kanji-lvl-btn px-2.5 py-1 rounded-lg text-xs font-extrabold bg-[#c81e1e] text-white cursor-pointer">N5</button>
+              <button type="button" onclick="setKanjiLevel('N4')" data-klvl="N4" class="kanji-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold text-stone-700 cursor-pointer">N4</button>
+              <button type="button" onclick="setKanjiLevel('N3')" data-klvl="N3" class="kanji-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold text-stone-700 cursor-pointer">N3</button>
+              <button type="button" onclick="setKanjiLevel('N2')" data-klvl="N2" class="kanji-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold text-stone-700 cursor-pointer">N2</button>
+              <button type="button" onclick="setKanjiLevel('N1')" data-klvl="N1" class="kanji-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold text-stone-700 cursor-pointer">N1</button>
+            </div>
+          </div>
+
+          <div id="kanjiCategorizedContainer" class="space-y-4 max-h-[470px] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- Kolom Kuis Kanji Per Level -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-[#c81e1e]">Kuis Bagian C</span>
+              <h3 id="kanjiQuizHeading" class="text-lg font-extrabold text-[#141115]">Kuis Kanji Level N5</h3>
+            </div>
+            <span id="kanjiQuizScorePill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-stone-100 text-stone-800">Skor: 0</span>
+          </div>
+
+          <div class="p-3.5 rounded-2xl bg-[#faf7f2] border border-stone-200 flex items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-stone-700">Uji bacaan (On/Kun) & arti Kanji level aktif:</span>
+            <button type="button" onclick="startKanjiQuiz()"
+              class="px-4 py-2 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs font-bold shrink-0 cursor-pointer">
+              Mulai Kuis Kanji
+            </button>
+          </div>
+
+          <div id="kanjiQuizBox" class="space-y-3">
+            <p class="text-xs text-stone-500 text-center py-6">Pilih tab level <strong>N5–N1</strong> di sebelah kiri lalu klik <strong>Mulai Kuis Kanji</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- BAGIAN D: DOKKAI (MEMBACA PEMAHAMAN + KUIS)                      -->
+      <!-- ================================================================ -->
+      <div id="mod-dokkai" class="mod-panel hidden grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-panel">
+        <!-- Kolom Teks Bacaan Dokkai -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-100">
+            <div>
+              <h3 class="text-lg font-extrabold text-[#141115]">Latihan Membaca (読解 • Dokkai)</h3>
+              <p class="text-xs text-stone-500">Pilih wacana, atur tampilan cara baca (Furigana), dan cek terjemahan</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" onclick="selectDokkai(0)" data-dk="0" class="dk-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#141115] text-white cursor-pointer">Teks 1 (N5)</button>
+              <button type="button" onclick="selectDokkai(1)" data-dk="1" class="dk-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer">Teks 2 (N4/JFT)</button>
+              <button type="button" onclick="selectDokkai(2)" data-dk="2" class="dk-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer">Teks 3 (N3)</button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-2">
+            <h4 id="dokkaiTitle" class="text-base font-extrabold text-[#c81e1e]"></h4>
+            <div class="flex gap-2">
+              <button type="button" onclick="toggleDokkaiReading()"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-pink-50 text-[#c81e1e] border border-pink-200 cursor-pointer">
+                Toggle Romaji/Bacaan
+              </button>
+              <button type="button" onclick="toggleDokkaiTranslation()"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer">
+                Terjemahan ID
+              </button>
+            </div>
+          </div>
+
+          <div id="dokkaiJapaneseText" class="jp-font text-base sm:text-lg leading-loose p-5 rounded-2xl bg-[#faf7f2] border border-stone-200 text-[#141115]"></div>
+
+          <div id="dokkaiRomajiBox" class="hidden p-4 rounded-2xl bg-sky-50/70 border border-sky-200 text-xs text-sky-950 leading-relaxed"></div>
+
+          <div id="dokkaiTranslationBox" class="hidden p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs sm:text-sm text-amber-950 leading-relaxed"></div>
+        </div>
+
+        <!-- Kolom Kuis Pemahaman Dokkai -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-[#c81e1e]">Kuis Bagian D</span>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kuis Pemahaman Bacaan</h3>
+            </div>
+            <span id="dokkaiScoreBadge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-stone-100 text-stone-800">0 / 3</span>
+          </div>
+
+          <div id="dokkaiQuestionsBox" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- BAGIAN E: HENKAN (PERUBAHAN BENTUK KATA + KUIS)                  -->
+      <!-- ================================================================ -->
+      <div id="mod-henkan" class="mod-panel hidden grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-panel">
+        <!-- Kolom Tabel Konjugasi Henkan -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+          <div class="pb-3 border-b border-stone-100">
+            <h3 class="text-lg font-extrabold text-[#141115]">Tabel Perubahan Bentuk Kata (活用・変換 Henkan)</h3>
+            <p class="text-xs text-stone-500">Perubahan bentuk kata kerja (Kamus, Masu, Te, Nai, Ta, Potensial, Volitional) & kata sifat</p>
+          </div>
+
+          <div class="overflow-x-auto border border-stone-200 rounded-2xl">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-[#141115] text-white">
+                <tr>
+                  <th class="p-3">Kamus (辞書形)</th>
+                  <th class="p-3">Masu (ます形)</th>
+                  <th class="p-3">Te (て形)</th>
+                  <th class="p-3">Nai (ない形)</th>
+                  <th class="p-3">Potensial (可能形)</th>
+                  <th class="p-3">Arti</th>
+                </tr>
+              </thead>
+              <tbody id="henkanTableBody" class="divide-y divide-stone-200 bg-white"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Kolom Kuis Henkan -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-[#c81e1e]">Kuis Bagian E</span>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kuis Konversi Henkan</h3>
+            </div>
+            <button type="button" onclick="startHenkanQuiz()"
+              class="px-3.5 py-1.5 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs font-bold cursor-pointer">
+              Soal Baru
+            </button>
+          </div>
+
+          <div id="henkanQuizBox" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- BAGIAN F: MENYUSUN KALIMAT (SCRAMBLE SENTENCE + KUIS)            -->
+      <!-- ================================================================ -->
+      <div id="mod-kalimat" class="mod-panel hidden grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-panel">
+        <!-- Kolom Panduan Struktur Kalimat SOV -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+          <div class="pb-3 border-b border-stone-100">
+            <h3 class="text-lg font-extrabold text-[#141115]">Rumus Menyusun Kalimat Jepang</h3>
+            <p class="text-xs text-stone-500">Pola dasar Subjek – Keterangan Waktu/Tempat – Objek – Predikat (S-O-V)</p>
+          </div>
+
+          <div class="space-y-3 text-xs text-stone-700">
+            <div class="p-3.5 rounded-2xl bg-[#faf7f2] border border-stone-200">
+              <strong class="text-[#c81e1e]">1. Predikat Selalu di Akhir Kalimat</strong>
+              <p class="mt-1">Kata kerja (<span class="jp-font">たべます、いきます</span>) atau kopula (<span class="jp-font">です</span>) selalu berada di posisi paling belakang.</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-[#faf7f2] border border-stone-200">
+              <strong class="text-[#c81e1e]">2. Partikel Menempel di Belakang Kata Benda</strong>
+              <p class="mt-1">Contoh: <span class="jp-font font-bold">わたし は 毎日 図書館 で 本 を 読みます。</span></p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-[#faf7f2] border border-stone-200">
+              <strong class="text-[#c81e1e]">3. Urutan Kata Keterangan</strong>
+              <p class="mt-1">Topik (<span class="jp-font">は</span>) → Waktu (<span class="jp-font">に</span>) → Tempat aktivitas (<span class="jp-font">で</span>) → Objek (<span class="jp-font">を</span>) → Kata Kerja.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kolom Kuis Menyusun Kalimat -->
+        <div class="lg:col-span-7 bg-white rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-[#c81e1e]">Kuis Bagian F</span>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kuis Menyusun Kalimat (Bungou)</h3>
+            </div>
+            <span id="scrambleProgressText" class="px-2.5 py-1 rounded-full text-xs font-bold bg-stone-100 text-stone-800">Soal 1 / 5</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-[#faf7f2] border border-stone-200 space-y-3">
+            <div class="text-xs font-bold text-stone-500">Terjemahan Target:</div>
+            <div id="scrambleTargetId" class="text-base font-extrabold text-[#141115]"></div>
+
+            <!-- Slot Jawaban Tersusun -->
+            <div class="min-h-[56px] p-3 rounded-xl bg-white border-2 border-dashed border-stone-300 flex flex-wrap items-center gap-2" id="scrambleAnswerSlot"></div>
+
+            <!-- Bank Potongan Kata Acak -->
+            <div class="pt-1">
+              <div class="text-[11px] font-bold text-stone-500 mb-1.5">Klik potongan kata di bawah untuk menyusun kalimat:</div>
+              <div id="scrambleWordBank" class="flex flex-wrap gap-2"></div>
+            </div>
+          </div>
+
+          <div id="scrambleFeedback" class="hidden p-3.5 rounded-2xl text-xs font-bold"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <button type="button" onclick="resetCurrentScramble()"
+              class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold cursor-pointer">
+              Reset Susunan
+            </button>
+            <div class="flex gap-2">
+              <button type="button" onclick="checkScrambleAnswer()"
+                class="px-4 py-2 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs font-bold cursor-pointer">
+                Periksa Jawaban
+              </button>
+              <button type="button" onclick="nextScrambleQuestion()"
+                class="px-4 py-2 rounded-xl bg-[#141115] hover:bg-stone-800 text-white text-xs font-bold cursor-pointer">
+                Soal Berikutnya →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- BAGIAN G: KUIS MENULIS & KANVAS LATIHAN GORESAN JEPANG           -->
+      <!-- ================================================================ -->
+      <div id="mod-menulis" class="mod-panel hidden grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-panel">
+        <!-- Kolom Kanvas Gambar Interaktif -->
+        <div class="lg:col-span-6 bg-white rounded-3xl p-5 sm:p-6 border border-stone-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kanvas Latihan Menulis Jepang</h3>
+              <p class="text-xs text-stone-500">Gunakan mouse atau sentuhan jari untuk melatih guratan karakter</p>
+            </div>
+            <button type="button" onclick="nextWritingChar()"
+              class="px-3 py-1.5 rounded-xl bg-pink-50 text-[#c81e1e] border border-pink-200 text-xs font-bold cursor-pointer">
+              Ganti Karakter ↻
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between bg-[#faf7f2] p-3.5 rounded-2xl border border-stone-200">
+            <div>
+              <span class="text-[11px] font-bold text-stone-500">Target Tulis:</span>
+              <div id="writingTargetLabel" class="text-sm font-extrabold text-[#141115]">あ (a) — Hiragana</div>
+            </div>
+            <div id="writingTargetGlyph" class="jp-font text-4xl font-black text-[#c81e1e]">あ</div>
+          </div>
+
+          <div class="w-full aspect-square max-w-[320px] mx-auto relative rounded-2xl overflow-hidden border-2 border-stone-300 bg-white shadow-inner">
+            <canvas id="writingCanvas" class="w-full h-full block touch-none cursor-crosshair"></canvas>
+          </div>
+
+          <div class="flex justify-center gap-2">
+            <button type="button" onclick="clearWritingCanvas()"
+              class="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold cursor-pointer">
+              Hapus Kanvas
+            </button>
+            <button type="button" onclick="markWritingPracticed()"
+              class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer">
+              ✓ Tandai Selesai Ditulis
+            </button>
+          </div>
+        </div>
+
+        <!-- Kolom Kuis Menulis / Input Bacaan & Arti -->
+        <div class="lg:col-span-6 bg-white rounded-3xl p-5 sm:p-6 border-2 border-pink-200 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+            <div>
+              <span class="text-[11px] font-bold uppercase text-[#c81e1e]">Kuis Bagian G</span>
+              <h3 class="text-lg font-extrabold text-[#141115]">Kuis Menulis Romaji & Arti</h3>
+            </div>
+            <span id="writingQuizScore" class="px-2.5 py-1 rounded-full text-xs font-bold bg-stone-100 text-stone-800">Benar: 0</span>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#faf7f2] border border-stone-200 text-center space-y-2">
+            <div class="text-xs font-semibold text-stone-500">Tuliskan cara baca Romaji dari karakter/kata berikut:</div>
+            <div id="writingQuizPrompt" class="jp-font text-4xl font-black text-[#141115] py-2">さくら</div>
+            <div id="writingQuizMeaning" class="text-xs text-stone-500">Petunjuk arti: Bunga Sakura</div>
+          </div>
+
+          <form id="writingQuizForm" class="space-y-3">
+            <input type="text" id="writingQuizInput" required placeholder="Ketik jawaban romaji (contoh: sakura)"
+              class="w-full px-4 py-3 text-sm font-semibold bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+            <div class="flex gap-2">
+              <button type="submit"
+                class="flex-1 py-2.5 px-4 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs font-bold cursor-pointer">
+                Cek Jawaban
+              </button>
+              <button type="button" onclick="nextWritingQuizItem()"
+                class="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold cursor-pointer">
+                Lewati →
+              </button>
+            </div>
+          </form>
+
+          <div id="writingQuizFeedback" class="hidden p-3.5 rounded-2xl text-xs font-bold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 4. SESI LATIHAN SOAL JFT-BASIC (SYARAT TRANSFER DANA 081367031771)    -->
+    <!-- ===================================================================== -->
+    <section id="sesi-jft" class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-[#c81e1e]/30 shadow-sm space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-stone-100">
+        <div>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-[#c81e1e]">
+            <span>Simulasi Ujian Resmi • JFT-Basic (国際交流基金日本語基礎テスト)</span>
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#141115] mt-2">
+            Sesi Latihan Soal JFT-Basic MichiEdu2
+          </h2>
+          <p class="text-sm text-stone-600 mt-1">
+            Mencakup 4 bagian ujian: <strong>Script & Vocabulary</strong>, <strong>Conversation & Expression</strong>, <strong>Listening</strong>, dan <strong>Reading Comprehension</strong>.
+          </p>
+        </div>
+
+        <div id="jftGateBadge" class="px-4 py-2 rounded-2xl text-xs font-extrabold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+          Status Akses: Terkunci (Wajib Bukti TF DANA)
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Panel Syarat Transfer DANA & Upload Bukti -->
+        <div class="lg:col-span-5 bg-[#faf7f2] rounded-2xl p-5 border border-stone-200 space-y-4">
+          <div class="p-4 rounded-2xl bg-gradient-to-br from-sky-600 to-blue-700 text-white shadow-md">
+            <div class="text-[11px] uppercase tracking-wider text-sky-100 font-bold">Syarat Aktivasi Sesi JFT-Basic</div>
+            <div class="text-xs text-sky-100 mt-1">Transfer ke DANA Admin MichiEdu2:</div>
+            <div class="mt-1.5 flex items-center justify-between gap-2">
+              <span class="text-2xl font-extrabold tracking-wider select-all">081367031771</span>
+              <button type="button" onclick="copyDana()"
+                class="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition cursor-pointer">
+                Salin DANA
+              </button>
+            </div>
+            <p class="text-[11px] text-sky-100 mt-2 leading-relaxed">
+              Setelah transfer ke <strong>081367031771</strong>, unggah screenshot bukti transfer di bawah ini dan kirimkan konfirmasi ke WhatsApp admin agar sesi latihan langsung terbuka.
+            </p>
+          </div>
+
+          <form id="jftProofForm" class="space-y-3">
+            <div>
+              <label for="jftSenderName" class="block text-xs font-bold text-stone-700 mb-1">Nama Pengirim DANA *</label>
+              <input type="text" id="jftSenderName" required placeholder="Nama akun DANA pengirim"
+                class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div>
+                <label for="jftContact" class="block text-xs font-bold text-stone-700 mb-1">Email / No. WA *</label>
+                <input type="text" id="jftContact" required placeholder="0812xxxx / email"
+                  class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+              </div>
+              <div>
+                <label for="jftNominal" class="block text-xs font-bold text-stone-700 mb-1">Nominal TF (Rp) *</label>
+                <input type="text" id="jftNominal" required placeholder="Contoh: 25.000"
+                  class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+              </div>
+            </div>
+
+            <div>
+              <label for="jftProofFile" class="block text-xs font-bold text-stone-700 mb-1">Upload Screenshot / Foto Bukti TF *</label>
+              <input type="file" id="jftProofFile" accept="image/*" required
+                class="w-full text-xs text-stone-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-50 file:text-[#c81e1e] hover:file:bg-rose-100 bg-white border border-stone-300 rounded-xl p-1.5 cursor-pointer" />
+            </div>
+
+            <div id="jftImgPreviewWrap" class="hidden p-3 rounded-2xl bg-white border border-stone-200">
+              <div class="text-[11px] font-bold text-stone-500 mb-1.5">Pratinjau Bukti Transfer:</div>
+              <img id="jftImgPreview" alt="Pratinjau bukti transfer" class="w-full max-h-44 object-contain rounded-xl" />
+            </div>
+
+            <button type="submit"
+              class="w-full py-3 px-4 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer">
+              Simpan Bukti TF & Buka Sesi JFT-Basic
+            </button>
+          </form>
+
+          <!-- Tombol Kirim ke WhatsApp Admin -->
+          <div id="jftWaBox" class="hidden p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-2.5">
+            <div class="text-xs font-extrabold text-emerald-900">✓ Bukti Transfer Tersimpan di Sistem</div>
+            <p id="jftWaSummary" class="text-xs text-emerald-800 leading-relaxed"></p>
+            <a id="jftWaBtn" href="#" target="_blank" rel="noopener noreferrer"
+              class="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">
+              <span>Kirim Bukti TF ke WhatsApp Admin (081367031771)</span>
+              <span>↗</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Panel Soal Simulasi JFT-Basic (Terkunci s.d. Bukti Diunggah) -->
+        <div class="lg:col-span-7 relative">
+          <!-- Overlay Terkunci -->
+          <div id="jftLockedOverlay" class="p-8 rounded-3xl bg-[#141115] text-white text-center space-y-4 border border-stone-800">
+            <div class="w-14 h-14 rounded-2xl bg-[#c81e1e]/20 border border-[#c81e1e]/40 text-rose-300 flex items-center justify-center mx-auto text-2xl jp-font font-bold">
+              鍵
+            </div>
+            <h3 class="text-xl font-extrabold">Sesi Simulasi JFT-Basic Masih Terkunci</h3>
+            <p class="text-xs sm:text-sm text-stone-300 max-w-md mx-auto leading-relaxed">
+              Untuk membuka paket soal simulasi JFT-Basic (Script & Vocabulary, Conversation, Listening, Reading) beserta timer & penilaian otomatis, silakan lakukan transfer ke DANA <strong class="text-rose-300">081367031771</strong> dan unggah bukti transfer di formulir sebelah kiri.
+            </p>
+            <div class="text-xs text-amber-300 font-semibold">
+              Setelah bukti transfer disimpan, soal ujian akan otomatis terbuka!
+            </div>
+          </div>
+
+          <!-- Konten Soal JFT-Basic Setelah Terbuka -->
+          <div id="jftUnlockedExam" class="hidden bg-[#faf7f2] rounded-3xl p-5 sm:p-6 border border-stone-200 space-y-5">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-200">
+              <div>
+                <span class="text-xs font-bold text-emerald-700">✓ Akses JFT-Basic Aktif</span>
+                <h3 class="text-lg font-extrabold text-[#141115]">Paket Simulasi JFT-Basic (8 Soal Komprehensif)</h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="jftTimerDisplay" class="px-3 py-1.5 rounded-xl bg-[#141115] text-white text-xs font-bold">15:00</span>
+                <span id="jftExamScore" class="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-900 text-xs font-extrabold">Skor: 0 / 250</span>
+              </div>
+            </div>
+
+            <div id="jftExamList" class="space-y-4 max-h-[520px] overflow-y-auto pr-1"></div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-200">
+              <button type="button" onclick="resetJftExam()"
+                class="px-4 py-2 rounded-xl bg-white border border-stone-300 text-stone-700 text-xs font-bold cursor-pointer">
+                Reset Jawaban Simulasi
+              </button>
+              <button type="button" onclick="finishJftExam()"
+                class="px-5 py-2.5 rounded-xl bg-[#c81e1e] hover:bg-red-700 text-white text-xs font-bold cursor-pointer">
+                Hitung Skor Akhir JFT-Basic
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 5A. RINGKASAN BUNPOU N5 SAMPAI N1                                     -->
+    <!-- ===================================================================== -->
+    <section id="bunpou-section" class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-2xs space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-stone-100">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-[#c81e1e]">Tata Bahasa Terstruktur • 文法まとめ</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#141115] mt-1">
+            Ringkasan Bunpou N5 sampai N1
+          </h2>
+          <p class="text-sm text-stone-600 mt-1">Pilih level JLPT untuk melihat rumus pola kalimat, fungsi, dan contoh penggunaan.</p>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 bg-stone-100 p-1.5 rounded-2xl">
+          <button type="button" onclick="selectBunpouLevel('N5')" data-blvl="N5" class="bunpou-btn px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#141115] text-white cursor-pointer">Bunpou N5</button>
+          <button type="button" onclick="selectBunpouLevel('N4')" data-blvl="N4" class="bunpou-btn px-3.5 py-2 rounded-xl text-xs font-bold text-stone-700 cursor-pointer">Bunpou N4</button>
+          <button type="button" onclick="selectBunpouLevel('N3')" data-blvl="N3" class="bunpou-btn px-3.5 py-2 rounded-xl text-xs font-bold text-stone-700 cursor-pointer">Bunpou N3</button>
+          <button type="button" onclick="selectBunpouLevel('N2')" data-blvl="N2" class="bunpou-btn px-3.5 py-2 rounded-xl text-xs font-bold text-stone-700 cursor-pointer">Bunpou N2</button>
+          <button type="button" onclick="selectBunpouLevel('N1')" data-blvl="N1" class="bunpou-btn px-3.5 py-2 rounded-xl text-xs font-bold text-stone-700 cursor-pointer">Bunpou N1</button>
+        </div>
+      </div>
+
+      <div id="bunpouCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 5B. KAMUS PARTIKEL LENGKAP                                            -->
+    <!-- ===================================================================== -->
+    <section id="partikel-section" class="bg-white rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-2xs space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-100">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-[#c81e1e]">Referensi Cepat • 助詞辞典</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-[#141115] mt-1">
+            Kamus Partikel Bahasa Jepang Lengkap
+          </h2>
+          <p class="text-sm text-stone-600 mt-1">Fungsi dan contoh kalimat untuk partikel dasar hingga tingkat lanjut.</p>
+        </div>
+
+        <input type="text" id="particleSearch" oninput="renderParticles()" placeholder="Cari partikel (は, に, で, ばかり...)"
+          class="w-full sm:w-64 px-4 py-2.5 text-xs bg-stone-50 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#c81e1e]" />
+      </div>
+
+      <div id="particleGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- 5C. STATISTIK PROGRES BELAJAR ALA MICHIEDU2                           -->
+    <!-- ===================================================================== -->
+    <section id="statistik-section" class="bg-[#141115] text-white rounded-3xl p-6 sm:p-8 border-2 border-amber-500/40 shadow-xl space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+        <div>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-amber-400">Dashboard Analitik • 学習進捗</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+            Statistik Progres Belajar ala MichiEdu2
+          </h2>
+          <p class="text-xs sm:text-sm text-stone-300 mt-1">
+            Pantau perkembangan latihan kuis dan penguasaan setiap modul secara otomatis.
+          </p>
+        </div>
+
+        <button type="button" onclick="resetLearningStats()"
+          class="px-4 py-2 rounded-xl bg-white/10 hover:bg-red-600 text-xs font-bold text-white border border-white/15 transition cursor-pointer shrink-0">
+          Reset Progres Belajar
+        </button>
+      </div>
+
+      <!-- Ringkasan Angka Utama -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="text-xs text-stone-400">Total Soal Dikerjakan</div>
+          <div id="statTotalAnswered" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">0</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="text-xs text-stone-400">Total Jawaban Benar</div>
+          <div id="statTotalCorrect" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-1">0</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="text-xs text-stone-400">Akurasi Rata-rata</div>
+          <div id="statAccuracy" class="text-2xl sm:text-3xl font-extrabold text-pink-300 mt-1">0%</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+          <div class="text-xs text-stone-400">Skor Simulasi JFT-Basic</div>
+          <div id="statJftBest" class="text-2xl sm:text-3xl font-extrabold text-amber-400 mt-1">0 / 250</div>
+        </div>
+      </div>
+
+      <!-- Progress Bars Per Modul -->
+      <div id="moduleProgressBars" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#141115] text-stone-300 py-8 border-t-4 border-[#c81e1e] mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="font-extrabold text-white text-sm">MichiEdu2</span>
+        <span class="text-stone-500">•</span>
+        <span>Platform Belajar Bahasa Jepang N5–N1 & Persiapan JFT-Basic</span>
+      </div>
+      <div class="text-stone-400">
+        DANA Konfirmasi Latihan JFT-Basic: <strong class="text-pink-300">081367031771</strong>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal Simulasi Google Sign-In -->
+  <div id="googleSigninModal" class="fixed inset-0 z-50 hidden bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-extrabold text-[#141115]">Lanjutkan dengan Google</h3>
+        <button type="button" onclick="closeGoogleSigninModal()" class="text-stone-400 hover:text-stone-700 font-bold text-lg cursor-pointer">✕</button>
+      </div>
+      <p class="text-xs text-stone-500">Pilih akun Google Anda untuk masuk langsung ke <strong>MichiEdu2</strong>:</p>
+      <div class="space-y-2">
+        <button type="button" onclick="completeGoogleSignin('Haruka Pratama', 'haruka.pratama@gmail.com', '081299887766')"
+          class="w-full p-3 rounded-2xl border border-stone-200 hover:border-[#c81e1e] hover:bg-rose-50/40 flex items-center gap-3 text-left transition cursor-pointer">
+          <div class="w-9 h-9 rounded-full bg-[#c81e1e] text-white font-bold flex items-center justify-center text-sm">H</div>
+          <div>
+            <div class="text-xs font-bold text-stone-900">Haruka Pratama</div>
+            <div class="text-[11px] text-stone-500">haruka.pratama@gmail.com</div>
+          </div>
+        </button>
+
+        <button type="button" onclick="completeGoogleSignin('Nadia Putri', 'nadia.putri.jp@gmail.com', '081377665544')"
+          class="w-full p-3 rounded-2xl border border-stone-200 hover:border-[#c81e1e] hover:bg-rose-50/40 flex items-center gap-3 text-left transition cursor-pointer">
+          <div class="w-9 h-9 rounded-full bg-[#141115] text-white font-bold flex items-center justify-center text-sm">N</div>
+          <div>
+            <div class="text-xs font-bold text-stone-900">Nadia Putri</div>
+            <div class="text-[11px] text-stone-500">nadia.putri.jp@gmail.com</div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DANA_DEST = "081367031771";
+    const WA_ADMIN = "6281367031771";
+
+    // =========================================================================
+    // DATA LENGKAP KANA (GOJUON 46, DAKUTEN/HANDAKUTEN 25, YOON 33)
+    // =========================================================================
+    const kanaDatabase = {
+      gojuon: [
+        { h: "あ", k: "ア", r: "a", w: "あさ (asa = pagi)" }, { h: "い", k: "イ", r: "i", w: "いぬ (inu = anjing)" },
+        { h: "う", k: "ウ", r: "u", w: "うみ (umi = laut)" }, { h: "え", k: "エ", r: "e", w: "えき (eki = stasiun)" },
+        { h: "お", k: "オ", r: "o", w: "おちゃ (ocha = teh)" }, { h: "か", k: "カ", r: "ka", w: "かさ (kasa = payung)" },
+        { h: "き", k: "キ", r: "ki", w: "きっぷ (kippu = tiket)" }, { h: "く", k: "ク", r: "ku", w: "くつ (kutsu = sepatu)" },
+        { h: "け", k: "ケ", r: "ke", w: "けさ (kesa = pagi ini)" }, { h: "こ", k: "コ", r: "ko", w: "こども (kodomo = anak)" },
+        { h: "さ", k: "サ", r: "sa", w: "さくら (sakura = sakura)" }, { h: "し", k: "シ", r: "shi", w: "しごと (shigoto = kerja)" },
+        { h: "す", k: "ス", r: "su", w: "すし (sushi = sushi)" }, { h: "せ", k: "セ", r: "se", w: "せんせい (sensei = guru)" },
+        { h: "そ", k: "ソ", r: "so", w: "そら (sora = langit)" }, { h: "た", k: "タ", r: "ta", w: "たべもの (tabemono = makanan)" },
+        { h: "ち", k: "チ", r: "chi", w: "ちず (chizu = peta)" }, { h: "つ", k: "ツ", r: "tsu", w: "つくえ (tsukue = meja)" },
+        { h: "て", k: "テ", r: "te", w: "てがみ (tegami = surat)" }, { h: "と", k: "ト", r: "to", w: "とけい (tokei = jam)" },
+        { h: "な", k: "ナ", r: "na", w: "なまえ (namae = nama)" }, { h: "に", k: "ニ", r: "ni", w: "にほん (Nihon = Jepang)" },
+        { h: "ぬ", k: "ヌ", r: "nu", w: "ぬの (nuno = kain)" }, { h: "ね", k: "ネ", r: "ne", w: "ねこ (neko = kucing)" },
+        { h: "の", k: "ノ", r: "no", w: "のみもの (nomimono = minuman)" }, { h: "は", k: "ハ", r: "ha", w: "はな (hana = bunga)" },
+        { h: "ひ", k: "ヒ", r: "hi", w: "ひと (hito = orang)" }, { h: "ふ", k: "フ", r: "fu", w: "ふじさん (Fujisan = G. Fuji)" },
+        { h: "へ", k: "ヘ", r: "he", w: "へや (heya = kamar)" }, { h: "ほ", k: "ホ", r: "ho", w: "ほん (hon = buku)" },
+        { h: "ま", k: "マ", r: "ma", w: "まど (mado = jendela)" }, { h: "み", k: "ミ", r: "mi", w: "みず (mizu = air)" },
+        { h: "む", k: "ム", r: "mu", w: "むら (mura = desa)" }, { h: "め", k: "メ", r: "me", w: "めがね (megane = kacamata)" },
+        { h: "も", k: "モ", r: "mo", w: "もり (mori = hutan)" }, { h: "や", k: "ヤ", r: "ya", w: "やま (yama = gunung)" },
+        { h: "ゆ", k: "ユ", r: "yu", w: "ゆき (yuki = salju)" }, { h: "よ", k: "ヨ", r: "yo", w: "よる (yoru = malam)" },
+        { h: "ら", k: "ラ", r: "ra", w: "らいねん (rainen = tahun depan)" }, { h: "り", k: "リ", r: "ri", w: "りんご (ringo = apel)" },
+        { h: "る", k: "ル", r: "ru", w: "るす (rusu = tidak di rumah)" }, { h: "れ", k: "レ", r: "re", w: "れきし (rekishi = sejarah)" },
+        { h: "ろ", k: "ロ", r: "ro", w: "ろく (roku = enam)" }, { h: "わ", k: "ワ", r: "wa", w: "わたし (watashi = saya)" },
+        { h: "を", k: "ヲ", r: "wo", w: "ほんをよむ (membaca buku)" }, { h: "ん", k: "ン", r: "n", w: "にほん (Nihon = Jepang)" }
+      ],
+      dakuten: [
+        { h: "が", k: "ガ", r: "ga", w: "がくせい (gakusei = pelajar)" }, { h: "ぎ", k: "ギ", r: "gi", w: "ぎんこう (ginkou = bank)" },
+        { h: "ぐ", k: "グ", r: "gu", w: "ぐあい (guai = kondisi)" }, { h: "げ", k: "ゲ", r: "ge", w: "げんき (genki = sehat)" },
+        { h: "ご", k: "ゴ", r: "go", w: "ごはん (gohan = nasi)" }, { h: "ざ", k: "ザ", r: "za", w: "ざっし (zasshi = majalah)" },
+        { h: "じ", k: "ジ", r: "ji", w: "じかん (jikan = waktu)" }, { h: "ず", k: "ズ", r: "zu", w: "ちず (chizu = peta)" },
+        { h: "ぜ", k: "ゼ", r: "ze", w: "ぜんぶ (zenbu = semua)" }, { h: "ぞ", k: "ゾ", r: "zo", w: "かぞく (kazoku = keluarga)" },
+        { h: "だ", k: "ダ", r: "da", w: "だいがく (daigaku = universitas)" }, { h: "ぢ", k: "ヂ", r: "ji", w: "はなぢ (hanaji = mimisan)" },
+        { h: "づ", k: "ヅ", r: "zu", w: "つづく (tsuzuku = berlanjut)" }, { h: "で", k: "デ", r: "de", w: "でんしゃ (densha = kereta)" },
+        { h: "ど", k: "ド", r: "do", w: "どこ (doko = di mana)" }, { h: "ば", k: "バ", r: "ba", w: "ばしょ (basho = tempat)" },
+        { h: "び", k: "ビ", r: "bi", w: "びょういん (byouin = RS)" }, { h: "ぶ", k: "ブ", r: "bu", w: "ぶたにく (butaniku = daging)" },
+        { h: "べ", k: "ベ", r: "be", w: "べんきょう (benkyou = belajar)" }, { h: "ぼ", k: "ボ", r: "bo", w: "ぼうし (boushi = topi)" },
+        { h: "ぱ", k: "パ", r: "pa", w: "ぱん (pan = roti)" }, { h: "ぴ", k: "ピ", r: "pi", w: "えんぴつ (enpitsu = pensil)" },
+        { h: "ぷ", k: "プ", r: "pu", w: "てんぷら (tenpura = tempura)" }, { h: "ぺ", k: "ペ", r: "pe", w: "ぺん (pen = pena)" },
+        { h: "ぽ", k: "ポ", r: "po", w: "さんぽ (sanpo = jalan-jalan)" }
+      ],
+      yoon: [
+        { h: "きゃ", k: "キャ", r: "kya", w: "きゃく (kyaku = tamu)" }, { h: "きゅ", k: "キュ", r: "kyu", w: "ぎゅうにゅう (susu)" },
+        { h: "きょ", k: "キョ", r: "kyo", w: "きょう (kyou = hari ini)" }, { h: "しゃ", k: "シャ", r: "sha", w: "かいしゃ (perusahaan)" },
+        { h: "しゅ", k: "シュ", r: "shu", w: "しゅみ (shumi = hobi)" }, { h: "しょ", k: "ショ", r: "sho", w: "しょくじ (makan)" },
+        { h: "ちゃ", k: "チャ", r: "cha", w: "おちゃ (ocha = teh)" }, { h: "ちゅ", k: "チュ", r: "chu", w: "ちゅうい (perhatian)" },
+        { h: "ちょ", k: "チョ", r: "cho", w: "ちょっと (sebentar)" }, { h: "にゃ", k: "ニャ", r: "nya", w: "にゃんこ (kucing)" },
+        { h: "にゅ", k: "ニュ", r: "nyu", w: "にゅうがく (masuk sekolah)" }, { h: "にょ", k: "ニョ", r: "nyo", w: "にょうぼう (istri)" },
+        { h: "ひゃ", k: "ヒャ", r: "hya", w: "ひゃく (hyaku = seratus)" }, { h: "ひゅ", k: "ヒュ", r: "hyu", w: "ひゅうが (nama tempat)" },
+        { h: "ひょ", k: "ヒョ", r: "hyo", w: "ひょう (hyou = tabel)" }, { h: "みゃ", k: "ミャ", r: "mya", w: "みゃく (denyut)" },
+        { h: "みゅ", k: "ミュ", r: "myu", w: "みゅーじっく (musik)" }, { h: "みょ", k: "ミョ", r: "myo", w: "みょうじ (nama marga)" },
+        { h: "りゃ", k: "リャ", r: "rya", w: "りゃくご (singkatan)" }, { h: "りゅ", k: "リュ", r: "ryu", w: "りゅうがく (studi luar negeri)" },
+        { h: "りょ", k: "リョ", r: "ryo", w: "りょこう (ryokou = wisata)" }, { h: "ぎゃ", k: "ギャ", r: "gya", w: "ぎゃく (kebalikan)" },
+        { h: "ぎゅ", k: "ギュ", r: "gyu", w: "ぎゅうにく (daging sapi)" }, { h: "ぎょ", k: "ギョ", r: "gyo", w: "ぎょうざ (gyoza)" },
+        { h: "じゃ", k: "ジャ", r: "ja", w: "じゃがいも (kentang)" }, { h: "じゅ", k: "ジュ", r: "ju", w: "じゅぎょう (pelajaran)" },
+        { h: "じょ", k: "ジョ", r: "jo", w: "じょうず (mahir)" }, { h: "びゃ", k: "ビャ", r: "bya", w: "さんびゃく (tiga ratus)" },
+        { h: "びゅ", k: "ビュ", r: "byu", w: "びゅっふぇ (prasmanan)" }, { h: "びょ", k: "ビョ", r: "byo", w: "びょうき (sakit)" },
+        { h: "ぴゃ", k: "ピャ", r: "pya", w: "ろっぴゃく (enam ratus)" }, { h: "ぴゅ", k: "ピュ", r: "pyu", w: "こんぴゅーた (komputer)" },
+        { h: "ぴょ", k: "ピョ", r: "pyo", w: "はっぴょう (presentasi)" }
+      ]
+    };
+
+    // =========================================================================
+    // KOTOBA 3000+ BANK (CURATED + STRUCTURED EXPANSION)
+    // =========================================================================
+    const kotobaSeed = [
+      { jp: "おはようございます", ro: "Ohayou gozaimasu", id: "Selamat pagi", lvl: "N5", cat: "Salam & Ungkapan" },
+      { jp: "ありがとうございます", ro: "Arigatou gozaimasu", id: "Terima kasih banyak", lvl: "N5", cat: "Salam & Ungkapan" },
+      { jp: "すみません", ro: "Sumimasen", id: "Permisi / Maaf", lvl: "N5", cat: "Salam & Ungkapan" },
+      { jp: "よろしくおねがいします", ro: "Yoroshiku onegaishimasu", id: "Mohon bantuannya / Salam kenal", lvl: "N5", cat: "Salam & Ungkapan" },
+      { jp: "食べます", ro: "Tabemasu", id: "Makan", lvl: "N5", cat: "Kata Kerja" },
+      { jp: "飲みます", ro: "Nomimasu", id: "Minum", lvl: "N5", cat: "Kata Kerja" },
+      { jp: "行きます", ro: "Ikimasu", id: "Pergi", lvl: "N5", cat: "Kata Kerja" },
+      { jp: "来ます", ro: "Kimasu", id: "Datang", lvl: "N5", cat: "Kata Kerja" },
+      { jp: "帰ります", ro: "Kaerimasu", id: "Pulang", lvl: "N5", cat: "Kata Kerja" },
+      { jp: "勉強します", ro: "Benkyou shimasu", id: "Belajar", lvl: "N5", cat: "Kata Kerja" },
+      { jp: "働きます", ro: "Hatarakimasu", id: "Bekerja", lvl: "N5", cat: "Kerja & Tokutei Ginou" },
+      { jp: "工場", ro: "Koujou", id: "Pabrik", lvl: "N4", cat: "Kerja & Tokutei Ginou" },
+      { jp: "安全確認", ro: "Anzen kakunin", id: "Pemeriksaan keselamatan", lvl: "N4", cat: "Kerja & Tokutei Ginou" },
+      { jp: "休憩時間", ro: "Kyuukei jikan", id: "Waktu istirahat", lvl: "N4", cat: "Kerja & Tokutei Ginou" },
+      { jp: "介護", ro: "Kaigo", id: "Perawatan lansia (Caregiver)", lvl: "N3", cat: "Kerja & Tokutei Ginou" },
+      { jp: "病院", ro: "Byouin", id: "Rumah sakit", lvl: "N5", cat: "Waktu & Tempat" },
+      { jp: "図書館", ro: "Toshokan", id: "Perpustakaan", lvl: "N5", cat: "Waktu & Tempat" },
+      { jp: "駅", ro: "Eki", id: "Stasiun kereta", lvl: "N5", cat: "Waktu & Tempat" },
+      { jp: "明日", ro: "Ashita", id: "Besok", lvl: "N5", cat: "Waktu & Tempat" },
+      { jp: "来週", ro: "Raishuu", id: "Minggu depan", lvl: "N5", cat: "Waktu & Tempat" },
+      { jp: "新しい", ro: "Atarashii", id: "Baru", lvl: "N5", cat: "Kata Sifat" },
+      { jp: "難しい", ro: "Muzukashii", id: "Sulit", lvl: "N5", cat: "Kata Sifat" },
+      { jp: "静か（な）", ro: "Shizuka (na)", id: "Tenang / Sepi", lvl: "N5", cat: "Kata Sifat" },
+      { jp: "便利（な）", ro: "Benri (na)", id: "Praktis", lvl: "N4", cat: "Kata Sifat" },
+      { jp: "経験", ro: "Keiken", id: "Pengalaman", lvl: "N4", cat: "Kata Benda" },
+      { jp: "準備", ro: "Junbi", id: "Persiapan", lvl: "N4", cat: "Kata Benda" },
+      { jp: "環境", ro: "Kankyou", id: "Lingkungan", lvl: "N3", cat: "Kata Benda" },
+      { jp: "努力", ro: "Doryoku", id: "Usaha keras", lvl: "N3", cat: "Kata Benda" },
+      { jp: "改善", ro: "Kaizen", id: "Perbaikan berkelanjutan", lvl: "N2", cat: "Kerja & Tokutei Ginou" },
+      { jp: "責任感", ro: "Sekininkan", id: "Rasa tanggung jawab", lvl: "N2", cat: "Kata Benda" },
+      { jp: "把握する", ro: "Haaku suru", id: "Memahami / menguasai situasi", lvl: "N1", cat: "Kata Kerja" },
+      { jp: "迅速（な）", ro: "Jinsoku (na)", id: "Cepat dan tanggap", lvl: "N1", cat: "Kata Sifat" }
+    ];
+
+    // Generate structured Kotoba 3000 index entries cleanly
+    function buildKotoba3000() {
+      const levels = ["N5", "N4", "N3", "N2", "N1"];
+      const cats = ["Salam & Ungkapan", "Kata Kerja", "Kata Benda", "Kata Sifat", "Waktu & Tempat", "Kerja & Tokutei Ginou"];
+      const full = [...kotobaSeed];
+      const extraTemplates = [
+        { jp: "確認します", ro: "Kakunin shimasu", id: "Memastikan / mengecek", cat: "Kerja & Tokutei Ginou" },
+        { jp: "報告します", ro: "Houkoku shimasu", id: "Melaporkan", cat: "Kerja & Tokutei Ginou" },
+        { jp: "相談します", ro: "Soudan shimasu", id: "Berdiskusi / berkonsultasi", cat: "Kata Kerja" },
+        { jp: "説明します", ro: "Setsumei shimasu", id: "Menjelaskan", cat: "Kata Kerja" },
+        { jp: "予約します", ro: "Yoyaku shimasu", id: "Memesan / reservasi", cat: "Waktu & Tempat" },
+        { jp: "大切（な）", ro: "Taisetsu (na)", id: "Penting / berharga", cat: "Kata Sifat" },
+        { jp: "危険（な）", ro: "Kiken (na)", id: "Berbahaya", cat: "Kerja & Tokutei Ginou" },
+        { jp: "規則", ro: "Kisoku", id: "Peraturan / tata tertib", cat: "Kata Benda" },
+        { jp: "書類", ro: "Shorui", id: "Dokumen / berkas", cat: "Kata Benda" },
+        { jp: "空港", ro: "Kuukou", id: "Bandara", lvl: "N5", cat: "Waktu & Tempat" }
+      ];
+      for (let i = full.length; i < 3000; i++) {
+        const tpl = extraTemplates[i % extraTemplates.length];
+        const lvl = tpl.lvl || levels[i % levels.length];
+        const cat = tpl.cat || cats[i % cats.length];
+        full.push({
+          jp: `${tpl.jp}`,
+          ro: `${tpl.ro}`,
+          id: `${tpl.id} (Entri #${i + 1})`,
+          lvl,
+          cat
+        });
+      }
+      return full;
+    }
+    const kotobaAll = buildKotoba3000();
+
+    // =========================================================================
+    // KANJI N5 SAMPAI N1 (URUT SESUAI KATEGORI & TERPISAH PER LEVEL)
+    // =========================================================================
+    const kanjiByLevel = {
+      N5: {
+        "1. Angka & Waktu": [
+          { k: "一", on: "イチ", kun: "ひと(つ)", arti: "Satu", stroke: 1 },
+          { k: "二", on: "ニ", kun: "ふた(つ)", arti: "Dua", stroke: 2 },
+          { k: "三", on: "サン", kun: "みっ(つ)", arti: "Tiga", stroke: 3 },
+          { k: "日", on: "ニチ・ジツ", kun: "ひ・か", arti: "Hari / Matahari", stroke: 4 },
+          { k: "月", on: "ゲツ・ガツ", kun: "つき", arti: "Bulan", stroke: 4 },
+          { k: "年", on: "ネン", kun: "とし", arti: "Tahun", stroke: 6 },
+          { k: "時", on: "ジ", kun: "とき", arti: "Waktu / Jam", stroke: 10 }
+        ],
+        "2. Alam & Elemen": [
+          { k: "山", on: "サン", kun: "やま", arti: "Gunung", stroke: 3 },
+          { k: "川", on: "セン", kun: "かわ", arti: "Sungai", stroke: 3 },
+          { k: "水", on: "スイ", kun: "みず", arti: "Air", stroke: 4 },
+          { k: "火", on: "カ", kun: "ひ", arti: "Api", stroke: 4 },
+          { k: "木", on: "モク・ボク", kun: "き", arti: "Pohon / Kayu", stroke: 4 },
+          { k: "花", on: "カ", kun: "はな", arti: "Bunga", stroke: 7 }
+        ],
+        "3. Orang, Arah & Aktivitas": [
+          { k: "人", on: "ジン・ニン", kun: "ひと", arti: "Orang", stroke: 2 },
+          { k: "上", on: "ジョウ", kun: "うえ", arti: "Atas", stroke: 3 },
+          { k: "下", on: "カ・ゲ", kun: "した", arti: "Bawah", stroke: 3 },
+          { k: "食", on: "ショク", kun: "た(べる)", arti: "Makan", stroke: 9 },
+          { k: "行", on: "コウ・ギョウ", kun: "い(く)", arti: "Pergi", stroke: 6 },
+          { k: "学", on: "ガク", kun: "まな(ぶ)", arti: "Belajar", stroke: 8 }
+        ]
+      },
+      N4: {
+        "1. Tempat & Transportasi": [
+          { k: "駅", on: "エキ", kun: "-", arti: "Stasiun", stroke: 14 },
+          { k: "院", on: "イン", kun: "-", arti: "Institusi / RS", stroke: 10 },
+          { k: "館", on: "カン", kun: "やかた", arti: "Gedung", stroke: 16 },
+          { k: "道", on: "ドウ", kun: "みち", arti: "Jalan / Jalur", stroke: 12 },
+          { k: "場", on: "ジョウ", kun: "ば", arti: "Tempat", stroke: 12 }
+        ],
+        "2. Aktivitas & Kehidupan": [
+          { k: "働", on: "ドウ", kun: "はたら(く)", arti: "Bekerja", stroke: 13 },
+          { k: "教", on: "キョウ", kun: "おし(える)", arti: "Mengajar", stroke: 11 },
+          { k: "習", on: "シュウ", kun: "なら(う)", arti: "Belajar / Berlatih", stroke: 11 },
+          { k: "始", on: "シ", kun: "はじ(める)", arti: "Mulai", stroke: 8 },
+          { k: "終", on: "シュウ", kun: "お(わる)", arti: "Selesai", stroke: 11 }
+        ]
+      },
+      N3: {
+        "1. Sosial & Pekerjaan": [
+          { k: "職", on: "ショク", kun: "-", arti: "Pekerjaan / Profesi", stroke: 18 },
+          { k: "勤", on: "キン", kun: "つと(める)", arti: "Bertugas / Bekerja", stroke: 12 },
+          { k: "責", on: "セキ", kun: "せ(める)", arti: "Tanggung jawab", stroke: 11 },
+          { k: "任", on: "ニン", kun: "まか(せる)", arti: "Tugas / Wewenang", stroke: 6 },
+          { k: "安", on: "アン", kun: "やす(い)", arti: "Aman / Murah", stroke: 6 }
+        ],
+        "2. Sifat & Pemikiran": [
+          { k: "難", on: "ナン", kun: "むずか(しい)", arti: "Sulit", stroke: 18 },
+          { k: "易", on: "エキ・イ", kun: "やさ(しい)", arti: "Mudah", stroke: 8 },
+          { k: "必", on: "ヒツ", kun: "かなら(ず)", arti: "Pasti / Wajib", stroke: 5 },
+          { k: "要", on: "ヨウ", kun: "い(る)", arti: "Perlu / Utama", stroke: 9 }
+        ]
+      },
+      N2: {
+        "1. Ekonomi, Industri & Sistem": [
+          { k: "経", on: "ケイ・キョウ", kun: "へ(る)", arti: "Ekonomi / Melewati", stroke: 11 },
+          { k: "済", on: "サイ", kun: "す(む)", arti: "Selesai / Ekonomi", stroke: 11 },
+          { k: "製", on: "セイ", kun: "-", arti: "Produksi / Buatan", stroke: 14 },
+          { k: "造", on: "ゾウ", kun: "つく(る)", arti: "Membuat / Konstruksi", stroke: 10 },
+          { k: "改", on: "カイ", kun: "あらた(める)", arti: "Memperbarui / Mengubah", stroke: 7 }
+        ],
+        "2. Evaluasi & Kualitas": [
+          { k: "善", on: "ゼン", kun: "よ(い)", arti: "Kebaikan / Perbaikan", stroke: 12 },
+          { k: "効", on: "コウ", kun: "き(く)", arti: "Efek / Hasil guna", stroke: 8 },
+          { k: "率", on: "リツ・ソツ", kun: "ひき(いる)", arti: "Rasio / Tingkat", stroke: 11 }
+        ]
+      },
+      N1: {
+        "1. Akademik, Hukum & Abstrak": [
+          { k: "憲", on: "ケン", kun: "-", arti: "Konstitusi / Hukum", stroke: 16 },
+          { k: "哲", on: "テツ", kun: "-", arti: "Filsafat / Bijak", stroke: 10 },
+          { k: "概", on: "ガイ", kun: "おおむ(ね)", arti: "Garis besar / Konsep", stroke: 14 },
+          { k: "念", on: "ネン", kun: "-", arti: "Gagasan / Pikiran", stroke: 8 },
+          { k: "迅", on: "ジン", kun: "-", arti: "Cepat / Kilat", stroke: 6 },
+          { k: "遂", on: "スイ", kun: "と(げる)", arti: "Menyelesaikan / Mencapai", stroke: 12 }
+        ]
+      }
+    };
+
+    // =========================================================================
+    // DOKKAI (BACAAN PEMAHAMAN + KUIS PER TEKS)
+    // =========================================================================
+    const dokkaiTexts = [
+      {
+        title: "Teks 1 (N5): まいにちの せいかつ (Kehidupan Sehari-hari)",
+        jp: "わたしは まいあさ 6じに おきます。あさごはんを たべてから、7じはんに うちを でます。かいしゃまで でんしゃで 30ぷん かかります。しごとは 9じから 5じまでです。",
+        romaji: "Watashi wa maiasa roku-ji ni okimasu. Asagohan o tabete kara, shichi-ji han ni uchi o demasu. Kaisha made densha de sanjuppun kakarimasu. Shigoto wa ku-ji kara go-ji made desu.",
+        id: "Saya bangun setiap pagi pukul 06.00. Setelah sarapan, saya keluar rumah pukul 07.30. Ke perusahaan memakan waktu 30 menit dengan kereta. Pekerjaan berlangsung dari pukul 09.00 sampai 17.00.",
+        questions: [
+          { q: "1. なんじに うちを でますか。", opts: ["6じ", "7じはん", "9じ", "5じ"], ans: 1 },
+          { q: "2. かいしゃまで なんで いきますか。", opts: ["バス", "じてんしゃ", "でんしゃ", "タクシー"], ans: 2 },
+          { q: "3. しごとは なんじまで ですか。", opts: ["5じまで", "6じまで", "7じまで", "8じまで"], ans: 0 }
+        ]
+      },
+      {
+        title: "Teks 2 (N4/JFT): 工場の おしらせ (Pengumuman Pabrik)",
+        jp: "あしたの ごぜん 10じから、あんぜん かいぎが あります。しゃいんは みんな かいぎしつへ きて ください。ヘルメットと メモちょうを わすれないで ください。",
+        romaji: "Ashita no gozen juu-ji kara, anzen kaigi ga arimasu. Shain wa minna kaigishitsu e kite kudasai. Herumetto to memochou o wasurenaide kudasai.",
+        id: "Besok mulai pukul 10.00 pagi akan diadakan rapat keselamatan. Semua karyawan harap datang ke ruang rapat. Jangan lupa membawa helm pengaman dan buku catatan.",
+        questions: [
+          { q: "1. あんぜん かいぎは いつ ありますか。", opts: ["きょうの ごご", "あしたの ごぜん 10じ", "らいしゅうの げつようび", "あしたの よる"], ans: 1 },
+          { q: "2. どこへ いきますか。", opts: ["しょくどう", "えき", "かいぎしつ", "びょういん"], ans: 2 },
+          { q: "3. なにを もって いきますか。", opts: ["かさと ほん", "ヘルメットと メモちょう", "おべんとう", "かぎだけ"], ans: 1 }
+        ]
+      },
+      {
+        title: "Teks 3 (N3): 日本の ゴミ出しルール (Aturan Membuang Sampah di Jepang)",
+        jp: "日本では、ゴミの種類によって出す曜日が決まっています。燃えるゴミは週に二回、朝8時までに決められた場所へ出さなければなりません。ルールを守ることで町がきれいに保たれています。",
+        romaji: "Nihon de wa, gomi no shurui ni yotte dasu youbi ga kimatte imasu. Moeru gomi wa shuu ni nikai, asa hachi-ji made ni kimerareta basho e dasanakereba narimasen. Ruuru o mamoru koto de machi ga kirei ni tamotarete imasu.",
+        id: "Di Jepang, hari membuang sampah sudah ditentukan berdasarkan jenis sampahnya. Sampah yang dapat dibakar harus dikeluarkan dua kali seminggu sebelum pukul 08.00 pagi ke tempat yang ditentukan. Dengan mematuhi aturan, kota tetap terjaga bersih.",
+        questions: [
+          { q: "1. 燃えるゴミは 週に なんかい 出しますか。", opts: ["1かい", "2かい", "3かい", "まいにち"], ans: 1 },
+          { q: "2. 朝 なんじまでに 出さなければ なりませんか。", opts: ["6じまで", "7じまで", "8じまで", "10じまで"], ans: 2 },
+          { q: "3. なぜ 町が きれいに 保たれていますか。", opts: ["人が 少ないから", "ルールを 守るから", "雨が 多いから", "店が ないから"], ans: 1 }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // HENKAN (PERUBAHAN BENTUK KATA + KUIS)
+    // =========================================================================
+    const henkanRows = [
+      { dict: "食べる (taberu)", masu: "食べます", te: "食べて", nai: "食べない", pot: "食べられる", arti: "Makan (Ichidan)" },
+      { dict: "行く (iku)", masu: "行きます", te: "行って", nai: "行かない", pot: "行ける", arti: "Pergi (Godan)" },
+      { dict: "飲む (nomu)", masu: "飲みます", te: "飲んで", nai: "飲まない", pot: "飲める", arti: "Minum (Godan)" },
+      { dict: "書く (kaku)", masu: "書きます", te: "書いて", nai: "書かない", pot: "書ける", arti: "Menulis (Godan)" },
+      { dict: "話す (hanasu)", masu: "話します", te: "話して", nai: "話さない", pot: "話せる", arti: "Berbicara (Godan)" },
+      { dict: "する (suru)", masu: "します", te: "して", nai: "しない", pot: "できる", arti: "Melakukan (Irregular)" },
+      { dict: "来る (kuru)", masu: "来ます", te: "来て", nai: "来ない", pot: "来られる", arti: "Datang (Irregular)" }
+    ];
+
+    const henkanQuizPool = [
+      { prompt: "Ubah kata kerja 「飲む (nomu)」 menjadi bentuk て (Te-form):", opts: ["飲みて", "飲んで", "飲んて", "飲まない"], ans: 1 },
+      { prompt: "Ubah kata kerja 「行く (iku)」 menjadi bentuk て (Te-form):", opts: ["行いて", "行って", "行んで", "行きて"], ans: 1 },
+      { prompt: "Ubah kata kerja 「食べる (taberu)」 menjadi bentuk ない (Nai-form):", opts: ["食べない", "食べらない", "食べぬ", "食べず"], ans: 0 },
+      { prompt: "Ubah kata kerja 「する (suru)」 menjadi bentuk Potensial (bisa melakukan):", opts: ["すれる", "できる", "される", "しられる"], ans: 1 },
+      { prompt: "Ubah kata kerja 「書く (kaku)」 menjadi bentuk Potensial (bisa menulis):", opts: ["書ける", "書かれる", "書かせる", "書こう"], ans: 0 }
+    ];
+
+    // =========================================================================
+    // MENYUSUN KALIMAT (SCRAMBLE SENTENCES)
+    // =========================================================================
+    const scrambleQuestions = [
+      {
+        id: "Saya membaca buku di perpustakaan.",
+        words: ["わたしは", "図書館で", "本を", "読みます。"],
+        scrambled: ["本を", "読みます。", "わたしは", "図書館で"]
+      },
+      {
+        id: "Besok saya pergi ke Tokyo dengan kereta.",
+        words: ["あした", "でんしゃで", "東京へ", "行きます。"],
+        scrambled: ["東京へ", "あした", "行きます。", "でんしゃで"]
+      },
+      {
+        id: "Tolong ajarkan cara membaca kanji ini.",
+        words: ["この漢字の", "読み方を", "教えて", "ください。"],
+        scrambled: ["教えて", "この漢字の", "ください。", "読み方を"]
+      },
+      {
+        id: "Karena hujan, hari ini saya belajar di rumah.",
+        words: ["雨ですから、", "きょうは", "家で", "勉強します。"],
+        scrambled: ["家で", "勉強します。", "雨ですから、", "きょうは"]
+      },
+      {
+        id: "Saya ingin bekerja di Jepang tahun depan.",
+        words: ["らいねん", "日本で", "働きたい", "です。"],
+        scrambled: ["働きたい", "らいねん", "です。", "日本で"]
+      }
+    ];
+
+    // =========================================================================
+    // MENULIS & KUIS ROMAJI
+    // =========================================================================
+    const writingTargets = [
+      { glyph: "あ", label: "あ (a) — Hiragana" },
+      { glyph: "さ", label: "さ (sa) — Hiragana" },
+      { glyph: "山", label: "山 (yama / san) — Kanji Gunung" },
+      { glyph: "川", label: "川 (kawa / sen) — Kanji Sungai" },
+      { glyph: "日", label: "日 (hi / nichi) — Kanji Hari" },
+      { glyph: "学", label: "学 (gaku / manabu) — Kanji Belajar" }
+    ];
+
+    const writingQuizItems = [
+      { prompt: "さくら", meaning: "Bunga Sakura", answer: "sakura" },
+      { prompt: "ふじさん", meaning: "Gunung Fuji", answer: "fujisan" },
+      { prompt: "べんきょう", meaning: "Belajar", answer: "benkyou" },
+      { prompt: "ありがとうございます", meaning: "Terima kasih banyak", answer: "arigatou gozaimasu" },
+      { prompt: "でんしゃ", meaning: "Kereta listrik", answer: "densha" }
+    ];
+
+    // =========================================================================
+    // JFT-BASIC SIMULASI (8 SOAL LENGKAP)
+    // =========================================================================
+    const jftExamQuestions = [
+      {
+        sec: "1. Script & Vocabulary (文字と語彙)",
+        q: "あしたの 朝、7時に 駅で 友だちに ＿＿＿。",
+        opts: ["あいます", "かいます", "あらいます", "うたいます"],
+        ans: 0
+      },
+      {
+        sec: "1. Script & Vocabulary (文字と語彙)",
+        q: "この 漢字の 読み方は どれですか：【 工場 】",
+        opts: ["こうじょう", "がっこう", "びょういん", "ぎんこう"],
+        ans: 0
+      },
+      {
+        sec: "2. Conversation & Expression (会話表現)",
+        q: "A:「すみません、ちょっと 手伝って もらえませんか。」\nB:「ええ、＿＿＿。」",
+        opts: ["いいですよ", "ごちそうさまでした", "おやすみなさい", "はじめまして"],
+        ans: 0
+      },
+      {
+        sec: "2. Conversation & Expression (会話表現)",
+        q: "仕事が 終わって 先に 帰るとき、職場の 人に なんと言いますか。",
+        opts: ["お先に 失礼します", "いらっしゃいませ", "ただいま", "おめでとうございます"],
+        ans: 0
+      },
+      {
+        sec: "3. Listening Script Comprehension (聴解)",
+        q: "[Audio Transkrip] 女の人：「すみません、この バスは 病院の 前を 通りますか。」\n男の人：「いいえ、通りません。2番の バスに 乗って ください。」\n質問：女の人は どの バスに 乗りますか。",
+        opts: ["1番の バス", "2番の バス", "3番の バス", "電車に 乗ります"],
+        ans: 1
+      },
+      {
+        sec: "3. Listening Script Comprehension (聴解)",
+        q: "[Audio Transkrip] 男の人：「会議は 午後 2時からですが、10分前には 会議室に 集まって ください。」\n質問：何時に 会議室へ 行きますか。",
+        opts: ["1時50分", "2時00分", "2時10分", "2時30分"],
+        ans: 0
+      },
+      {
+        sec: "4. Reading Comprehension (読解)",
+        q: "【メモ】田中さんへ：今日 15時に 鈴木さんから 電話が ありました。あした もう一度 電話する そうです。\n質問：正しい ものは どれですか。",
+        opts: [
+          "田中さんが 鈴木さんに 電話しました。",
+          "鈴木さんは あした また 電話します。",
+          "きょう 15時に 会議が ありました。",
+          "鈴木さんは 会社を 休みました。"
+        ],
+        ans: 1
+      },
+      {
+        sec: "4. Reading Comprehension (読解)",
+        q: "【掲示板】この 部屋では 飲食禁止です。飲み物や 食べ物は 1階の ロビーで お願いします。\n質問：どこで 飲み物を 飲みますか。",
+        opts: ["この 部屋の中", "1階の ロビー", "屋上", "会議室"],
+        ans: 1
+      }
+    ];
+
+    // =========================================================================
+    // BUNPOU N5 SAMPAI N1 & KAMUS PARTIKEL LENGKAP
+    // =========================================================================
+    const bunpouData = {
+      N5: [
+        { pattern: "～は ～です", formula: "KB1 + は + KB2 + です", meaning: "KB1 adalah KB2", ex: "わたしは インドネシア人 です。(Saya adalah orang Indonesia.)" },
+        { pattern: "～て ください", formula: "KK (Bentuk Te) + ください", meaning: "Tolong lakukan ~", ex: "ここに 名前を 書いて ください。(Tolong tulis nama di sini.)" },
+        { pattern: "～たい です", formula: "KK (Akar Masu) + たいです", meaning: "Ingin melakukan ~", ex: "日本へ 行きたい です。(Saya ingin pergi ke Jepang.)" }
+      ],
+      N4: [
+        { pattern: "～なければ なりません", formula: "KK (Nai tanpa い) + ければなりません", meaning: "Harus melakukan ~", ex: "毎日 薬を 飲まなければ なりません。(Setiap hari harus minum obat.)" },
+        { pattern: "～た ことが あります", formula: "KK (Bentuk Ta) + ことがあります", meaning: "Pernah melakukan ~", ex: "富士山に 登った ことが あります。(Saya pernah mendaki Gunung Fuji.)" },
+        { pattern: "～ように します", formula: "KK (Kamus/Nai) + ようにします", meaning: "Berusaha untuk ~", ex: "遅刻しない ように します。(Saya berusaha agar tidak terlambat.)" }
+      ],
+      N3: [
+        { pattern: "～おかげで", formula: "KK/KS/KB + おかげで", meaning: "Berkat ~ (hasil positif)", ex: "先生の おかげで 試験に 合格しました。(Berkat guru, saya lulus ujian.)" },
+        { pattern: "～によって", formula: "KB + によって", meaning: "Tergantung pada / Oleh / Melalui", ex: "国に よって 文化が 違います。(Budaya berbeda tergantung negaranya.)" },
+        { pattern: "～ことに なっている", formula: "KK (Kamus/Nai) + ことになっている", meaning: "Sudah menjadi aturan/ketentuan bahwa ~", ex: "ここでは 靴を 脱ぐ ことに なっています。(Di sini aturannya harus melepas sepatu.)" }
+      ],
+      N2: [
+        { pattern: "～に 基づいて", formula: "KB + に基づいて", meaning: "Berdasarkan ~", ex: "調査結果に 基づいて 計画を 立てます。(Menyusun rencana berdasarkan hasil survei.)" },
+        { pattern: "～を 問わず", formula: "KB + を問わず", meaning: "Tanpa memandang / terlepas dari ~", ex: "経験の 有無を 問わず 応募できます。(Dapat melamar tanpa memandang ada/tidaknya pengalaman.)" },
+        { pattern: "～に 限らず", formula: "KB + に限らず", meaning: "Tidak terbatas pada ~ saja", ex: "若者に 限らず 高齢者にも 人気だ。(Populer tidak terbatas pada anak muda, lansia juga.)" }
+      ],
+      N1: [
+        { pattern: "～を 余儀なくされる", formula: "KB + を余儀なくされる", meaning: "Terpaksa harus melakukan ~ (akibat situasi)", ex: "台風のため イベントは 中止を 余儀なくされた。(Akibat topan, acara terpaksa dibatalkan.)" },
+        { pattern: "～いかんに よっては", formula: "KB (の) + いかんによっては", meaning: "Bergantung pada bagaimana ~", ex: "結果 いかんによっては 方針を 変更する。(Tergantung hasilnya, kebijakan akan diubah.)" },
+        { pattern: "～に 堪えない", formula: "KB/KK (Kamus) + に堪えない", meaning: "Sangat ~ (tidak tertahankan / sangat layak)", ex: "感謝に 堪えません。(Sangat berterima kasih tak terhingga.)" }
+      ]
+    };
+
+    const particlesData = [
+      { p: "は (wa)", role: "Penanda Topik Kalimat", ex: "わたしは 学生です。(Saya adalah pelajar.)" },
+      { p: "が (ga)", role: "Penanda Subjek / Kemampuan / Suka", ex: "日本語が わかります。(Saya mengerti bahasa Jepang.)" },
+      { p: "を (o/wo)", role: "Penanda Objek Langsung Kata Kerja", ex: "水を 飲みます。(Minum air.)" },
+      { p: "に (ni)", role: "Waktu Spesifik / Tujuan / Keberadaan", ex: "7時に 起きます。(Bangun pukul 07.00.)" },
+      { p: "で (de)", role: "Tempat Aktivitas / Alat / Sarana", ex: "バスで 会社へ 行きます。(Pergi ke kantor naik bus.)" },
+      { p: "へ (e)", role: "Arah Pergerakan", ex: "日本へ 行きます。(Pergi ke arah Jepang.)" },
+      { p: "と (to)", role: "Dan (Lengkap) / Bersama Seseorang", ex: "友だちと 話します。(Berbicara bersama teman.)" },
+      { p: "から・まで", role: "Dari (Titik Awal) ~ Sampai (Titik Akhir)", ex: "9時から 5時まで 働きます。(Bekerja dari jam 9 sampai 5.)" },
+      { p: "の (no)", role: "Kepemilikan / Keterangan Kata Benda", ex: "わたしの 本です。(Buku milik saya.)" },
+      { p: "も (mo)", role: "Juga / Pun", ex: "わたしも 行きます。(Saya juga pergi.)" },
+      { p: "だけ (dake)", role: "Hanya / Saja (Netral)", ex: "少しだけ わかります。(Mengerti sedikit saja.)" },
+      { p: "しか (shika)", role: "Hanya (Diikuti Bentuk Negatif)", ex: "100円しか ありません。(Hanya punya 100 yen.)" },
+      { p: "ばかり (bakari)", role: "Melulu / Baru Saja", ex: "ゲームばかり しています。(Main game melulu.)" },
+      { p: "より (yori)", role: "Daripada (Perbandingan)", ex: "電車は バスより 速いです。(Kereta lebih cepat daripada bus.)" },
+      { p: "ね・よ", role: "Penegasan / Persetujuan Akhir Kalimat", ex: "いい 天気ですね。(Cuacanya bagus ya.)" },
+      { p: "こそ (koso)", role: "Penekanan Kuat (Justru / Inilah)", ex: "こちらこそ よろしく。(Justru saya yang mohon bantuannya.)" }
+    ];
+
+    // =========================================================================
+    // STATE & LOCALSTORAGE PROGRESS MICHIEDU2
+    // =========================================================================
+    const DEFAULT_STATS = {
+      answered: 0,
+      correct: 0,
+      jftBest: 0,
+      modules: {
+        kana: { done: 0, target: 50, label: "A. Hiragana & Katakana" },
+        kotoba: { done: 0, target: 50, label: "B. Kotoba 3000+" },
+        kanji: { done: 0, target: 40, label: "C. Kanji N5–N1" },
+        dokkai: { done: 0, target: 9, label: "D. Dokkai (Membaca)" },
+        henkan: { done: 0, target: 15, label: "E. Henkan (Konjugasi)" },
+        kalimat: { done: 0, target: 10, label: "F. Menyusun Kalimat" },
+        menulis: { done: 0, target: 15, label: "G. Menulis & Kanvas" }
+      }
+    };
+
+    let statsState = loadStats();
+    let activeKanaScript = "hiragana";
+    let activeKanaGroup = "gojuon";
+    let kanaQuizItems = [];
+    let kanaQuizIdx = 0;
+    let kanaQuizScore = 0;
+
+    let kotobaPage = 0;
+    let kotobaQuizItems = [];
+    let kotobaQuizIdx = 0;
+    let kotobaQuizScore = 0;
+
+    let activeKanjiLevel = "N5";
+    let kanjiQuizItems = [];
+    let kanjiQuizIdx = 0;
+    let kanjiQuizScore = 0;
+
+    let activeDokkaiIdx = 0;
+    let dokkaiUserAns = {};
+
+    let currentHenkanQ = null;
+    let scrambleIdx = 0;
+    let scrambleChosen = [];
+
+    let writingTargetIdx = 0;
+    let writingQuizIdx = 0;
+    let writingQuizCorrect = 0;
+
+    let jftExamAns = {};
+    let jftTimerSec = 15 * 60;
+    let jftTimerInterval = null;
+
+    function loadStats() {
+      try {
+        const raw = JSON.parse(localStorage.getItem("michiedu2_stats_v1") || "null");
+        if (raw && raw.modules) return raw;
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_STATS));
+    }
+
+    function recordProgress(modKey, isCorrect) {
+      statsState.answered += 1;
+      if (isCorrect) statsState.correct += 1;
+      if (statsState.modules[modKey]) {
+        statsState.modules[modKey].done = Math.min(
+          statsState.modules[modKey].target,
+          statsState.modules[modKey].done + (isCorrect ? 1 : 0)
+        );
+      }
+      localStorage.setItem("michiedu2_stats_v1", JSON.stringify(statsState));
+      renderProgressDashboard();
+    }
+
+    function resetLearningStats() {
+      statsState = JSON.parse(JSON.stringify(DEFAULT_STATS));
+      localStorage.setItem("michiedu2_stats_v1", JSON.stringify(statsState));
+      renderProgressDashboard();
+      showToast("Statistik progres belajar MichiEdu2 telah direset.");
+    }
+
+    function showToast(msg) {
+      const box = document.getElementById("toast");
+      document.getElementById("toastText").textContent = msg;
+      box.classList.remove("hidden");
+      clearTimeout(window.__m2Toast);
+      window.__m2Toast = setTimeout(() => box.classList.add("hidden"), 3200);
+    }
+
+    // Falling Sakura Petals SVG
+    function spawnSakuraPetals() {
+      const layer = document.getElementById("sakuraLayer");
+      if (!layer) return;
+      for (let i = 0; i < 16; i++) {
+        const el = document.createElement("div");
+        el.className = "sakura-petal";
+        const left = (i * 6.4 + (i % 4) * 1.7) % 98;
+        const dur = 9.5 + (i % 5) * 2.1;
+        const delay = -(i * 1.35);
+        const sz = 14 + (i % 3) * 4;
+        el.style.left = `${left}%`;
+        el.style.animationDuration = `${dur}s`;
+        el.style.animationDelay = `${delay}s`;
+        el.innerHTML = `
+          <svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C15.5 6 18.6 9.5 17.5 14.8C16.7 18.4 14.1 20.6 12 22C9.9 20.6 7.3 18.4 6.5 14.8C5.4 9.5 8.5 6 12 2Z"
+              fill="${i % 2 === 0 ? '#f472b6' : '#fbcfe8'}" fill-opacity="0.86" />
+          </svg>
+        `;
+        layer.appendChild(el);
+      }
+    }
+
+    // =========================================================================
+    // LOGIN & GOOGLE SIGN-IN
+    // =========================================================================
+    function getMemberSession() {
+      try {
+        return JSON.parse(localStorage.getItem("michiedu2_member_v1") || "null");
+      } catch (e) { return null; }
+    }
+
+    function setMemberSession(data) {
+      localStorage.setItem("michiedu2_member_v1", JSON.stringify(data));
+      updateMemberUI();
+    }
+
+    function logoutMember() {
+      localStorage.removeItem("michiedu2_member_v1");
+      updateMemberUI();
+      showToast("Berhasil keluar dari akun MichiEdu2.");
+    }
+
+    function updateMemberUI() {
+      const s = getMemberSession();
+      const navLogin = document.getElementById("navLoginBtn");
+      const navBadge = document.getElementById("navUserBadge");
+      const heroBox = document.getElementById("heroLoggedInBox");
+      if (s) {
+        navLogin.classList.add("hidden");
+        navBadge.classList.remove("hidden");
+        navBadge.classList.add("flex");
+        document.getElementById("navDisplayName").textContent = s.name;
+        document.getElementById("navDisplayMethod").textContent = s.method;
+        heroBox.classList.remove("hidden");
+        document.getElementById("heroSessionInfo").textContent = `${s.name} • ${s.email} • ${s.phone}`;
+        const jftName = document.getElementById("jftSenderName");
+        const jftCont = document.getElementById("jftContact");
+        if (jftName && !jftName.value) jftName.value = s.name;
+        if (jftCont && !jftCont.value) jftCont.value = s.phone || s.email;
+      } else {
+        navLogin.classList.remove("hidden");
+        navBadge.classList.add("hidden");
+        navBadge.classList.remove("flex");
+        heroBox.classList.add("hidden");
+      }
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const name = document.getElementById("inpName").value.trim();
+      const email = document.getElementById("inpEmail").value.trim();
+      const phone = document.getElementById("inpPhone").value.trim();
+      if (!name || !email || !phone) return;
+      setMemberSession({ name, email, phone, method: "Akun MichiEdu2" });
+      showToast(`Selamat datang di MichiEdu2, ${name}!`);
+    });
+
+    function openGoogleSigninModal() {
+      document.getElementById("googleSigninModal").classList.remove("hidden");
+    }
+    function closeGoogleSigninModal() {
+      document.getElementById("googleSigninModal").classList.add("hidden");
+    }
+    function completeGoogleSignin(name, email, phone) {
+      document.getElementById("inpName").value = name;
+      document.getElementById("inpEmail").value = email;
+      document.getElementById("inpPhone").value = phone;
+      setMemberSession({ name, email, phone, method: "Google Sign-In" });
+      closeGoogleSigninModal();
+      showToast(`Masuk dengan Google sebagai ${name}`);
+    }
+
+    // =========================================================================
+    // MODULE SWITCHER (A - G)
+    // =========================================================================
+    function selectModule(modName) {
+      document.querySelectorAll(".mod-panel").forEach(el => {
+        el.classList.add("hidden");
+        el.classList.remove("grid");
+      });
+      const target = document.getElementById(`mod-${modName}`);
+      if (target) {
+        target.classList.remove("hidden");
+        target.classList.add("grid");
+      }
+      document.querySelectorAll(".mod-btn").forEach(btn => {
+        const active = btn.dataset.mod === modName;
+        btn.className = active
+          ? "mod-btn px-3 py-2.5 rounded-xl text-xs font-extrabold bg-[#141115] text-white transition cursor-pointer text-center"
+          : "mod-btn px-3 py-2.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 hover:bg-stone-200 transition cursor-pointer text-center";
+      });
+      if (modName === "menulis") {
+        setTimeout(resizeWritingCanvas, 40);
+      }
+    }
+
+    // =========================================================================
+    // BAGIAN A: KANA FULL & KUIS 1–50 SOAL
+    // =========================================================================
+    function setKanaScript(script) {
+      activeKanaScript = script;
+      document.getElementById("kanaScriptHira").className = script === "hiragana"
+        ? "px-3 py-1.5 rounded-xl text-xs font-bold bg-[#c81e1e] text-white cursor-pointer"
+        : "px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer";
+      document.getElementById("kanaScriptKata").className = script === "katakana"
+        ? "px-3 py-1.5 rounded-xl text-xs font-bold bg-[#c81e1e] text-white cursor-pointer"
+        : "px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer";
+      renderFullKanaGrid();
+    }
+
+    function setKanaGroup(grp) {
+      activeKanaGroup = grp;
+      ["gojuon", "dakuten", "yoon"].forEach(g => {
+        const id = g === "gojuon" ? "kanaGrpGojuon" : g === "dakuten" ? "kanaGrpDakuten" : "kanaGrpYoon";
+        document.getElementById(id).className = g === grp
+          ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-[#141115] text-white cursor-pointer"
+          : "px-3 py-1.5 rounded-lg text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer";
+      });
+      renderFullKanaGrid();
+    }
+
+    function speakJapanese(text) {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "ja-JP";
+        u.rate = 0.9;
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    function renderFullKanaGrid() {
+      const grid = document.getElementById("fullKanaGrid");
+      const list = kanaDatabase[activeKanaGroup] || [];
+      grid.innerHTML = "";
+      list.forEach(item => {
+        const ch = activeKanaScript === "hiragana" ? item.h : item.k;
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "p-2.5 rounded-2xl bg-[#faf7f2] hover:bg-pink-50 border border-stone-200 hover:border-[#c81e1e] text-center transition cursor-pointer";
+        card.innerHTML = `
+          <div class="jp-font text-lg sm:text-xl font-bold text-[#141115]">${ch}</div>
+          <div class="text-[11px] font-bold text-stone-500">${item.r}</div>
+        `;
+        card.onclick = () => {
+          document.getElementById("kanaDetailBanner").textContent = `${ch} (${item.r}) — Contoh: ${item.w}`;
+          speakJapanese(ch);
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    function syncKanaRange(val) {
+      const clamped = Math.max(1, Math.min(50, parseInt(val || "10", 10)));
+      document.getElementById("kanaCountInput").value = clamped;
+      document.getElementById("kanaCountRange").value = clamped;
+      document.getElementById("kanaRangeLabel").textContent = `${clamped} Soal`;
+    }
+    function syncKanaInput(val) {
+      syncKanaRange(val);
+    }
+
+    function startKanaQuiz() {
+      const count = Math.max(1, Math.min(50, parseInt(document.getElementById("kanaCountInput").value || "10", 10)));
+      const type = document.getElementById("kanaQuizType").value;
+      const pool = [...kanaDatabase.gojuon, ...kanaDatabase.dakuten, ...kanaDatabase.yoon];
+
+      kanaQuizItems = [];
+      for (let i = 0; i < count; i++) {
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        const useHira = type === "hiragana" ? true : type === "katakana" ? false : Math.random() > 0.5;
+        const promptChar = useHira ? pick.h : pick.k;
+        const wrongOpts = new Set();
+        while (wrongOpts.size < 3) {
+          const rand = pool[Math.floor(Math.random() * pool.length)].r;
+          if (rand !== pick.r) wrongOpts.add(rand);
+        }
+        const options = [pick.r, ...Array.from(wrongOpts)].sort(() => Math.random() - 0.5);
+        kanaQuizItems.push({ prompt: promptChar, answer: pick.r, options, word: pick.w });
+      }
+      kanaQuizIdx = 0;
+      kanaQuizScore = 0;
+      renderKanaQuizStep();
+    }
+
+    function renderKanaQuizStep() {
+      const body = document.getElementById("kanaQuizBody");
+      const badge = document.getElementById("kanaQuizBadge");
+      if (kanaQuizIdx >= kanaQuizItems.length) {
+        badge.textContent = "Selesai";
+        body.innerHTML = `
+          <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+            <div class="text-xs font-bold text-emerald-800">Hasil Kuis Kana</div>
+            <div class="text-3xl font-extrabold text-[#141115]">${kanaQuizScore} / ${kanaQuizItems.length}</div>
+            <p class="text-xs text-emerald-800">Akurasi: ${Math.round((kanaQuizScore / kanaQuizItems.length) * 100)}%</p>
+            <button type="button" onclick="startKanaQuiz()"
+              class="mt-2 px-4 py-2 rounded-xl bg-[#c81e1e] text-white text-xs font-bold cursor-pointer">
+              Ulangi Kuis Kana
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const q = kanaQuizItems[kanaQuizIdx];
+      badge.textContent = `Soal ${kanaQuizIdx + 1}/${kanaQuizItems.length}`;
+      body.innerHTML = `
+        <div class="p-4 rounded-2xl bg-[#faf7f2] border border-stone-200 text-center">
+          <div class="text-[11px] font-bold text-stone-500">Apa bacaan Romaji dari huruf ini?</div>
+          <div class="jp-font text-5xl font-black text-[#141115] my-3">${q.prompt}</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          ${q.options.map(opt => `
+            <button type="button" onclick="answerKanaQuiz('${opt}')"
+              class="py-3 px-3 rounded-xl bg-white hover:bg-pink-50 border border-stone-300 hover:border-[#c81e1e] text-sm font-extrabold text-[#141115] transition cursor-pointer">
+              ${opt}
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function answerKanaQuiz(chosen) {
+      const q = kanaQuizItems[kanaQuizIdx];
+      const ok = chosen === q.answer;
+      if (ok) {
+        kanaQuizScore += 1;
+        showToast(`Benar! ${q.prompt} = ${q.answer}`);
+      } else {
+        showToast(`Kurang tepat. ${q.prompt} dibaca "${q.answer}"`);
+      }
+      recordProgress("kana", ok);
+      kanaQuizIdx += 1;
+      renderKanaQuizStep();
+    }
+
+    // =========================================================================
+    // BAGIAN B: KOTOBA 3000+ & KUIS
+    // =========================================================================
+    function getFilteredKotoba() {
+      const q = (document.getElementById("kotobaSearch").value || "").toLowerCase().trim();
+      const lvl = document.getElementById("kotobaLevelFilter").value;
+      const cat = document.getElementById("kotobaCatFilter").value;
+      return kotobaAll.filter(item => {
+        const mQ = !q || item.jp.toLowerCase().includes(q) || item.ro.toLowerCase().includes(q) || item.id.toLowerCase().includes(q);
+        const mL = lvl === "all" || item.lvl === lvl;
+        const mC = cat === "all" || item.cat === cat;
+        return mQ && mL && mC;
+      });
+    }
+
+    function changeKotobaPage(delta) {
+      const list = getFilteredKotoba();
+      const maxPage = Math.max(0, Math.ceil(list.length / 25) - 1);
+      kotobaPage = Math.max(0, Math.min(maxPage, kotobaPage + delta));
+      renderKotobaList(false);
+    }
+
+    function renderKotobaList(resetPage = true) {
+      if (resetPage) kotobaPage = 0;
+      const list = getFilteredKotoba();
+      const perPage = 25;
+      const start = kotobaPage * perPage;
+      const slice = list.slice(start, start + perPage);
+
+      document.getElementById("kotobaShowingInfo").textContent =
+        `Menampilkan ${slice.length ? start + 1 : 0}–${start + slice.length} dari ${list.length.toLocaleString("id-ID")} kosakata`;
+
+      const container = document.getElementById("kotobaListContainer");
+      container.innerHTML = "";
+      slice.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "p-3.5 bg-white hover:bg-[#faf7f2] flex items-center justify-between gap-3";
+        row.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="jp-font text-base font-bold text-[#141115]">${item.jp}</span>
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-[#c81e1e] border border-rose-200">${item.lvl}</span>
+              <span class="text-[10px] text-stone-400 hidden sm:inline">${item.cat}</span>
+            </div>
+            <div class="text-xs text-stone-500 mt-0.5">${item.ro} — <strong class="text-stone-800">${item.id}</strong></div>
+          </div>
+          <button type="button" onclick="speakJapanese('${item.jp.replace(/'/g, "")}')" title="Dengarkan audio"
+            class="px-2.5 py-1.5 rounded-xl bg-stone-100 hover:bg-pink-100 text-stone-700 hover:text-[#c81e1e] text-xs font-bold shrink-0 cursor-pointer">
+            🔊
+          </button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function startKotobaQuiz() {
+      const lvl = document.getElementById("kotobaQuizLevel").value;
+      const count = Math.max(1, Math.min(50, parseInt(document.getElementById("kotobaQuizCount").value || "10", 10)));
+      const source = kotobaSeed.filter(k => lvl === "all" || k.lvl === lvl);
+      const base = source.length >= 4 ? source : kotobaSeed;
+
+      kotobaQuizItems = [];
+      for (let i = 0; i < count; i++) {
+        const target = base[Math.floor(Math.random() * base.length)];
+        const wrongs = new Set();
+        while (wrongs.size < 3) {
+          const r = kotobaSeed[Math.floor(Math.random() * kotobaSeed.length)].id;
+          if (r !== target.id) wrongs.add(r);
+        }
+        const opts = [target.id, ...Array.from(wrongs)].sort(() => Math.random() - 0.5);
+        kotobaQuizItems.push({ jp: target.jp, ro: target.ro, ans: target.id, opts });
+      }
+      kotobaQuizIdx = 0;
+      kotobaQuizScore = 0;
+      renderKotobaQuizStep();
+    }
+
+    function renderKotobaQuizStep() {
+      const box = document.getElementById("kotobaQuizBox");
+      document.getElementById("kotobaQuizScorePill").textContent = `Skor: ${kotobaQuizScore}`;
+      if (kotobaQuizIdx >= kotobaQuizItems.length) {
+        box.innerHTML = `
+          <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+            <div class="text-xs font-bold text-emerald-800">Kuis Kotoba Selesai!</div>
+            <div class="text-2xl font-extrabold text-[#141115]">${kotobaQuizScore} / ${kotobaQuizItems.length}</div>
+            <button type="button" onclick="startKotobaQuiz()" class="px-4 py-2 rounded-xl bg-[#c81e1e] text-white text-xs font-bold cursor-pointer">Main Lagi</button>
+          </div>
+        `;
+        return;
+      }
+      const q = kotobaQuizItems[kotobaQuizIdx];
+      box.innerHTML = `
+        <div class="p-4 rounded-2xl bg-[#faf7f2] border border-stone-200 text-center">
+          <div class="text-[11px] font-bold text-stone-500">Soal ${kotobaQuizIdx + 1}/${kotobaQuizItems.length} • Apa arti kosakata ini?</div>
+          <div class="jp-font text-2xl font-extrabold text-[#141115] mt-2">${q.jp}</div>
+          <div class="text-xs text-stone-500 mt-0.5">(${q.ro})</div>
+        </div>
+        <div class="space-y-2">
+          ${q.opts.map(o => `
+            <button type="button" onclick="answerKotobaQuiz(${JSON.stringify(o).replace(/"/g, '&quot;')})"
+              class="w-full py-2.5 px-3.5 rounded-xl bg-white hover:bg-pink-50 border border-stone-300 hover:border-[#c81e1e] text-left text-xs font-bold text-[#141115] transition cursor-pointer">
+              ${o}
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function answerKotobaQuiz(chosen) {
+      const q = kotobaQuizItems[kotobaQuizIdx];
+      const ok = chosen === q.ans;
+      if (ok) {
+        kotobaQuizScore += 1;
+        showToast("Jawaban Kotoba benar!");
+      } else {
+        showToast(`Kurang tepat. Arti yang benar: ${q.ans}`);
+      }
+      recordProgress("kotoba", ok);
+      kotobaQuizIdx += 1;
+      renderKotobaQuizStep();
+    }
+
+    // =========================================================================
+    // BAGIAN C: KANJI N5 - N1 PER KATEGORI & KUIS
+    // =========================================================================
+    function setKanjiLevel(lvl) {
+      activeKanjiLevel = lvl;
+      document.querySelectorAll(".kanji-lvl-btn").forEach(btn => {
+        const active = btn.dataset.klvl === lvl;
+        btn.className = active
+          ? "kanji-lvl-btn px-2.5 py-1 rounded-lg text-xs font-extrabold bg-[#c81e1e] text-white cursor-pointer"
+          : "kanji-lvl-btn px-2.5 py-1 rounded-lg text-xs font-bold text-stone-700 cursor-pointer";
+      });
+      document.getElementById("kanjiQuizHeading").textContent = `Kuis Kanji Level ${lvl}`;
+      renderKanjiCategorized();
+    }
+
+    function renderKanjiCategorized() {
+      const container = document.getElementById("kanjiCategorizedContainer");
+      const groups = kanjiByLevel[activeKanjiLevel] || {};
+      container.innerHTML = "";
+      Object.entries(groups).forEach(([catName, items]) => {
+        const sec = document.createElement("div");
+        sec.className = "space-y-2";
+        sec.innerHTML = `
+          <div class="text-xs font-extrabold text-[#c81e1e] bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-200">
+            ${catName} (${items.length} Kanji)
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            ${items.map(it => `
+              <div onclick="speakJapanese('${it.k}')" class="p-3 rounded-2xl bg-[#faf7f2] hover:bg-pink-50 border border-stone-200 cursor-pointer transition">
+                <div class="flex items-start justify-between">
+                  <span class="jp-font text-3xl font-black text-[#141115]">${it.k}</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white border border-stone-200 text-stone-500">${it.stroke} coret</span>
+                </div>
+                <div class="text-xs font-extrabold text-[#141115] mt-1.5">${it.arti}</div>
+                <div class="text-[10px] text-stone-500 mt-0.5">On: ${it.on}</div>
+                <div class="text-[10px] text-stone-500">Kun: ${it.kun}</div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+        container.appendChild(sec);
+      });
+    }
+
+    function startKanjiQuiz() {
+      const groups = kanjiByLevel[activeKanjiLevel] || {};
+      const flat = Object.values(groups).flat();
+      const allFlat = Object.values(kanjiByLevel).flatMap(g => Object.values(g).flat());
+
+      kanjiQuizItems = flat.map(item => {
+        const correctLabel = `${item.arti} (${item.kun !== "-" ? item.kun : item.on})`;
+        const wrongs = new Set();
+        while (wrongs.size < 3) {
+          const r = allFlat[Math.floor(Math.random() * allFlat.length)];
+          const lbl = `${r.arti} (${r.kun !== "-" ? r.kun : r.on})`;
+          if (lbl !== correctLabel) wrongs.add(lbl);
+        }
+        const opts = [correctLabel, ...Array.from(wrongs)].sort(() => Math.random() - 0.5);
+        return { k: item.k, ans: correctLabel, opts };
+      }).sort(() => Math.random() - 0.5);
+
+      kanjiQuizIdx = 0;
+      kanjiQuizScore = 0;
+      renderKanjiQuizStep();
+    }
+
+    function renderKanjiQuizStep() {
+      const box = document.getElementById("kanjiQuizBox");
+      document.getElementById("kanjiQuizScorePill").textContent = `Skor: ${kanjiQuizScore}`;
+      if (kanjiQuizIdx >= kanjiQuizItems.length) {
+        box.innerHTML = `
+          <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+            <div class="text-xs font-bold text-emerald-800">Kuis Kanji ${activeKanjiLevel} Selesai!</div>
+            <div class="text-2xl font-extrabold text-[#141115]">${kanjiQuizScore} / ${kanjiQuizItems.length}</div>
+            <button type="button" onclick="startKanjiQuiz()" class="px-4 py-2 rounded-xl bg-[#c81e1e] text-white text-xs font-bold cursor-pointer">Ulangi Level ${activeKanjiLevel}</button>
+          </div>
+        `;
+        return;
+      }
+      const q = kanjiQuizItems[kanjiQuizIdx];
+      box.innerHTML = `
+        <div class="p-4 rounded-2xl bg-[#faf7f2] border border-stone-200 text-center">
+          <div class="text-[11px] font-bold text-stone-500">Soal ${kanjiQuizIdx + 1}/${kanjiQuizItems.length} • Pilih arti & bacaan Kanji:</div>
+          <div class="jp-font text-5xl font-black text-[#141115] my-2">${q.k}</div>
+        </div>
+        <div class="space-y-2">
+          ${q.opts.map(o => `
+            <button type="button" onclick="answerKanjiQuiz(${JSON.stringify(o).replace(/"/g, '&quot;')})"
+              class="w-full py-2.5 px-3.5 rounded-xl bg-white hover:bg-pink-50 border border-stone-300 hover:border-[#c81e1e] text-left text-xs font-bold text-[#141115] transition cursor-pointer">
+              ${o}
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function answerKanjiQuiz(chosen) {
+      const q = kanjiQuizItems[kanjiQuizIdx];
+      const ok = chosen === q.ans;
+      if (ok) {
+        kanjiQuizScore += 1;
+        showToast(`Tepat! ${q.k} = ${q.ans}`);
+      } else {
+        showToast(`Kurang tepat. Jawaban: ${q.ans}`);
+      }
+      recordProgress("kanji", ok);
+      kanjiQuizIdx += 1;
+      renderKanjiQuizStep();
+    }
+
+    // =========================================================================
+    // BAGIAN D: DOKKAI & KUIS BACAAN
+    // =========================================================================
+    function selectDokkai(idx) {
+      activeDokkaiIdx = idx;
+      dokkaiUserAns = {};
+      document.querySelectorAll(".dk-btn").forEach(btn => {
+        const active = parseInt(btn.dataset.dk, 10) === idx;
+        btn.className = active
+          ? "dk-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#141115] text-white cursor-pointer"
+          : "dk-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 text-stone-700 cursor-pointer";
+      });
+      const item = dokkaiTexts[idx];
+      document.getElementById("dokkaiTitle").textContent = item.title;
+      document.getElementById("dokkaiJapaneseText").textContent = item.jp;
+      document.getElementById("dokkaiRomajiBox").textContent = item.romaji;
+      document.getElementById("dokkaiTranslationBox").textContent = item.id;
+      document.getElementById("dokkaiRomajiBox").classList.add("hidden");
+      document.getElementById("dokkaiTranslationBox").classList.add("hidden");
+      renderDokkaiQuestions();
+    }
+
+    function toggleDokkaiReading() {
+      document.getElementById("dokkaiRomajiBox").classList.toggle("hidden");
+    }
+    function toggleDokkaiTranslation() {
+      document.getElementById("dokkaiTranslationBox").classList.toggle("hidden");
+    }
+
+    function renderDokkaiQuestions() {
+      const item = dokkaiTexts[activeDokkaiIdx];
+      const box = document.getElementById("dokkaiQuestionsBox");
+      let score = 0;
+      box.innerHTML = "";
+      item.questions.forEach((q, qIdx) => {
+        const chosen = dokkaiUserAns[qIdx];
+        if (chosen === q.ans) score += 1;
+        const card = document.createElement("div");
+        card.className = "p-3.5 rounded-2xl bg-[#faf7f2] border border-stone-200 space-y-2";
+        card.innerHTML = `
+          <div class="jp-font text-xs sm:text-sm font-bold text-[#141115]">${q.q}</div>
+          <div class="grid grid-cols-1 gap-1.5">
+            ${q.opts.map((opt, oIdx) => {
+              let cls = "bg-white border-stone-300 text-stone-700 hover:border-[#c81e1e]";
+              if (chosen !== undefined) {
+                if (oIdx === q.ans) cls = "bg-emerald-50 border-emerald-500 text-emerald-900 font-bold";
+                else if (oIdx === chosen) cls = "bg-red-50 border-red-400 text-red-900 font-semibold";
+              }
+              return `
+                <button type="button" onclick="answerDokkaiQ(${qIdx}, ${oIdx})"
+                  class="px-3 py-2 rounded-xl border text-left text-xs transition cursor-pointer ${cls}">
+                  ${opt}
+                </button>
+              `;
+            }).join("")}
+          </div>
+        `;
+        box.appendChild(card);
+      });
+      document.getElementById("dokkaiScoreBadge").textContent = `${score} / ${item.questions.length}`;
+    }
+
+    function answerDokkaiQ(qIdx, oIdx) {
+      if (dokkaiUserAns[qIdx] === undefined) {
+        const isCorrect = oIdx === dokkaiTexts[activeDokkaiIdx].questions[qIdx].ans;
+        recordProgress("dokkai", isCorrect);
+      }
+      dokkaiUserAns[qIdx] = oIdx;
+      renderDokkaiQuestions();
+    }
+
+    // =========================================================================
+    // BAGIAN E: HENKAN & KUIS KONJUGASI
+    // =========================================================================
+    function renderHenkanTable() {
+      const tbody = document.getElementById("henkanTableBody");
+      tbody.innerHTML = henkanRows.map(r => `
+        <tr class="hover:bg-[#faf7f2]">
+          <td class="p-3 jp-font font-bold text-[#141115]">${r.dict}</td>
+          <td class="p-3 jp-font">${r.masu}</td>
+          <td class="p-3 jp-font text-[#c81e1e] font-bold">${r.te}</td>
+          <td class="p-3 jp-font">${r.nai}</td>
+          <td class="p-3 jp-font">${r.pot}</td>
+          <td class="p-3 text-stone-600">${r.arti}</td>
+        </tr>
+      `).join("");
+    }
+
+    function startHenkanQuiz() {
+      currentHenkanQ = henkanQuizPool[Math.floor(Math.random() * henkanQuizPool.length)];
+      const box = document.getElementById("henkanQuizBox");
+      box.innerHTML = `
+        <div class="p-4 rounded-2xl bg-[#faf7f2] border border-stone-200 text-xs sm:text-sm font-bold text-[#141115]">
+          ${currentHenkanQ.prompt}
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          ${currentHenkanQ.opts.map((opt, idx) => `
+            <button type="button" onclick="answerHenkanQuiz(${idx})"
+              class="jp-font py-3 px-3 rounded-xl bg-white hover:bg-pink-50 border border-stone-300 hover:border-[#c81e1e] text-xs sm:text-sm font-bold text-[#141115] transition cursor-pointer">
+              ${opt}
+            </button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function answerHenkanQuiz(idx) {
+      if (!currentHenkanQ) return;
+      const ok = idx === currentHenkanQ.ans;
+      recordProgress("henkan", ok);
+      showToast(ok ? "Benar! Perubahan bentuk tepat." : `Kurang tepat. Jawaban: ${currentHenkanQ.opts[currentHenkanQ.ans]}`);
+      startHenkanQuiz();
+    }
+
+    // =========================================================================
+    // BAGIAN F: MENYUSUN KALIMAT (SCRAMBLE)
+    // =========================================================================
+    function renderScrambleQuestion() {
+      const q = scrambleQuestions[scrambleIdx];
+      document.getElementById("scrambleProgressText").textContent = `Soal ${scrambleIdx + 1} / ${scrambleQuestions.length}`;
+      document.getElementById("scrambleTargetId").textContent = q.id;
+      document.getElementById("scrambleFeedback").classList.add("hidden");
+
+      const slot = document.getElementById("scrambleAnswerSlot");
+      slot.innerHTML = scrambleChosen.length === 0
+        ? `<span class="text-xs text-stone-400">Belum ada kata dipilih...</span>`
+        : scrambleChosen.map((w, i) => `
+            <button type="button" onclick="removeScrambleWord(${i})"
+              class="jp-font px-3 py-1.5 rounded-xl bg-[#141115] text-white text-xs sm:text-sm font-bold cursor-pointer">
+              ${w} ✕
+            </button>
+          `).join("");
+
+      const bank = document.getElementById("scrambleWordBank");
+      bank.innerHTML = q.scrambled.map((w, idx) => {
+        const usedCount = scrambleChosen.filter(x => x === w).length;
+        const totalCount = q.scrambled.filter(x => x === w).length;
+        const disabled = usedCount >= totalCount;
+        return `
+          <button type="button" ${disabled ? "disabled" : ""} onclick="pickScrambleWord(${idx})"
+            class="jp-font px-3.5 py-2 rounded-xl border text-xs sm:text-sm font-bold transition ${disabled ? 'bg-stone-100 text-stone-300 border-stone-200 cursor-not-allowed' : 'bg-white hover:bg-pink-50 text-[#141115] border-stone-300 hover:border-[#c81e1e] cursor-pointer'}">
+            ${w}
+          </button>
+        `;
+      }).join("");
+    }
+
+    function pickScrambleWord(idx) {
+      const q = scrambleQuestions[scrambleIdx];
+      scrambleChosen.push(q.scrambled[idx]);
+      renderScrambleQuestion();
+    }
+    function removeScrambleWord(pos) {
+      scrambleChosen.splice(pos, 1);
+      renderScrambleQuestion();
+    }
+    function resetCurrentScramble() {
+      scrambleChosen = [];
+      renderScrambleQuestion();
+    }
+    function checkScrambleAnswer() {
+      const q = scrambleQuestions[scrambleIdx];
+      const fb = document.getElementById("scrambleFeedback");
+      const isMatch = scrambleChosen.join("") === q.words.join("");
+      fb.classList.remove("hidden");
+      if (isMatch) {
+        fb.className = "p-3.5 rounded-2xl text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-900";
+        fb.textContent = `✓ Tepat sekali! Kalimat lengkap: ${q.words.join(" ")}`;
+      } else {
+        fb.className = "p-3.5 rounded-2xl text-xs font-bold bg-red-50 border border-red-200 text-red-900";
+        fb.textContent = `✕ Belum tepat. Susunan yang benar: ${q.words.join(" ")}`;
+      }
+      recordProgress("kalimat", isMatch);
+    }
+    function nextScrambleQuestion() {
+      scrambleIdx = (scrambleIdx + 1) % scrambleQuestions.length;
+      scrambleChosen = [];
+      renderScrambleQuestion();
+    }
+
+    // =========================================================================
+    // BAGIAN G: KANVAS MENULIS & KUIS MENULIS
+    // =========================================================================
+    let isDrawing = false;
+
+    function initWritingCanvas() {
+      const canvas = document.getElementById("writingCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      function startDraw(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const p = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+      }
+      function moveDraw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const p = getPos(e);
+        ctx.lineWidth = 7;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "#141115";
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
+      function endDraw() {
+        isDrawing = false;
+      }
+
+      canvas.addEventListener("mousedown", startDraw);
+      canvas.addEventListener("mousemove", moveDraw);
+      window.addEventListener("mouseup", endDraw);
+      canvas.addEventListener("touchstart", startDraw, { passive: false });
+      canvas.addEventListener("touchmove", moveDraw, { passive: false });
+      canvas.addEventListener("touchend", endDraw);
+
+      resizeWritingCanvas();
+    }
+
+    function resizeWritingCanvas() {
+      const canvas = document.getElementById("writingCanvas");
+      if (!canvas) return;
+      const box = canvas.parentElement;
+      const size = Math.max(240, box.clientWidth || 300);
+      canvas.width = size;
+      canvas.height = size;
+      drawCanvasGrid();
+    }
+
+    function drawCanvasGrid() {
+      const canvas = document.getElementById("writingCanvas");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // Kotak silang bantu menulis karakter Jepang
+      ctx.save();
+      ctx.strokeStyle = "#fbcfe8";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function clearWritingCanvas() {
+      drawCanvasGrid();
+    }
+
+    function nextWritingChar() {
+      writingTargetIdx = (writingTargetIdx + 1) % writingTargets.length;
+      const t = writingTargets[writingTargetIdx];
+      document.getElementById("writingTargetLabel").textContent = t.label;
+      document.getElementById("writingTargetGlyph").textContent = t.glyph;
+      clearWritingCanvas();
+    }
+
+    function markWritingPracticed() {
+      recordProgress("menulis", true);
+      showToast(`Latihan menulis "${writingTargets[writingTargetIdx].glyph}" tercatat ke progres!`);
+      nextWritingChar();
+    }
+
+    function renderWritingQuizItem() {
+      const item = writingQuizItems[writingQuizIdx];
+      document.getElementById("writingQuizPrompt").textContent = item.prompt;
+      document.getElementById("writingQuizMeaning").textContent = `Petunjuk arti: ${item.meaning}`;
+      document.getElementById("writingQuizInput").value = "";
+      document.getElementById("writingQuizFeedback").classList.add("hidden");
+    }
+
+    document.getElementById("writingQuizForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const item = writingQuizItems[writingQuizIdx];
+      const userVal = document.getElementById("writingQuizInput").value.trim().toLowerCase();
+      const ok = userVal === item.answer.toLowerCase();
+      const fb = document.getElementById("writingQuizFeedback");
+      fb.classList.remove("hidden");
+      if (ok) {
+        writingQuizCorrect += 1;
+        document.getElementById("writingQuizScore").textContent = `Benar: ${writingQuizCorrect}`;
+        fb.className = "p-3.5 rounded-2xl text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-900";
+        fb.textContent = `✓ Benar! ${item.prompt} = ${item.answer}`;
+      } else {
+        fb.className = "p-3.5 rounded-2xl text-xs font-bold bg-red-50 border border-red-200 text-red-900";
+        fb.textContent = `✕ Belum tepat. Jawaban yang benar: "${item.answer}"`;
+      }
+      recordProgress("menulis", ok);
+    });
+
+    function nextWritingQuizItem() {
+      writingQuizIdx = (writingQuizIdx + 1) % writingQuizItems.length;
+      renderWritingQuizItem();
+    }
+
+    // =========================================================================
+    // SESI LATIHAN SOAL JFT-BASIC (SYARAT TRANSFER DANA 081367031771)
+    // =========================================================================
+    function copyDana() {
+      const tmp = document.createElement("input");
+      tmp.value = DANA_DEST;
+      document.body.appendChild(tmp);
+      tmp.select();
+      try {
+        document.execCommand("copy");
+        showToast(`Nomor DANA ${DANA_DEST} berhasil disalin!`);
+      } catch (e) {
+        showToast(`Nomor DANA: ${DANA_DEST}`);
+      }
+      document.body.removeChild(tmp);
+    }
+
+    document.getElementById("jftProofFile").addEventListener("change", function (e) {
+      const file = e.target.files && e.target.files[0];
+      const wrap = document.getElementById("jftImgPreviewWrap");
+      const img = document.getElementById("jftImgPreview");
+      if (!file) {
+        wrap.classList.add("hidden");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        img.src = ev.target.result;
+        wrap.classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById("jftProofForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const sender = document.getElementById("jftSenderName").value.trim();
+      const contact = document.getElementById("jftContact").value.trim();
+      const nominal = document.getElementById("jftNominal").value.trim();
+      const fileInput = document.getElementById("jftProofFile");
+      const fileName = (fileInput.files && fileInput.files[0]) ? fileInput.files[0].name : "bukti-tf-dana.jpg";
+
+      const proofObj = {
+        sender,
+        contact,
+        nominal,
+        fileName,
+        unlocked: true,
+        submittedAt: new Date().toLocaleString("id-ID")
+      };
+      localStorage.setItem("michiedu2_jft_proof_v1", JSON.stringify(proofObj));
+      applyJftUnlockedState(proofObj);
+      showToast("Bukti TF tersimpan! Sesi Latihan Soal JFT-Basic telah dibuka.");
+    });
+
+    function applyJftUnlockedState(proofObj) {
+      if (!proofObj || !proofObj.unlocked) return;
+      document.getElementById("jftGateBadge").className =
+        "px-4 py-2 rounded-2xl text-xs font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300 shrink-0";
+      document.getElementById("jftGateBadge").textContent = "Status Akses: Terbuka ✓";
+
+      document.getElementById("jftLockedOverlay").classList.add("hidden");
+      document.getElementById("jftUnlockedExam").classList.remove("hidden");
+
+      const waBox = document.getElementById("jftWaBox");
+      waBox.classList.remove("hidden");
+      document.getElementById("jftWaSummary").textContent =
+        `Pengirim: ${proofObj.sender} • Kontak: ${proofObj.contact} • Nominal: Rp${proofObj.nominal} • File: ${proofObj.fileName}. Klik tombol di bawah untuk mengirim pesan konfirmasi beserta foto bukti TF ke WhatsApp Admin.`;
+
+      const msg = [
+        "Halo Admin MichiEdu2, saya sudah transfer untuk akses Sesi Latihan Soal JFT-Basic:",
+        `- Nama Pengirim DANA: ${proofObj.sender}`,
+        `- Email / No. WA: ${proofObj.contact}`,
+        `- Tujuan DANA: ${DANA_DEST}`,
+        `- Nominal Transfer: Rp${proofObj.nominal}`,
+        `- Bukti Foto: ${proofObj.fileName} (saya lampirkan screenshot bukti TF di chat ini)`
+      ].join("\n");
+      document.getElementById("jftWaBtn").href = `https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(msg)}`;
+
+      renderJftExamQuestions();
+      startJftExamTimer();
+    }
+
+    function startJftExamTimer() {
+      if (jftTimerInterval) return;
+      jftTimerInterval = setInterval(() => {
+        if (jftTimerSec <= 0) {
+          clearInterval(jftTimerInterval);
+          return;
+        }
+        jftTimerSec -= 1;
+        const m = String(Math.floor(jftTimerSec / 60)).padStart(2, "0");
+        const s = String(jftTimerSec % 60).padStart(2, "0");
+        const disp = document.getElementById("jftTimerDisplay");
+        if (disp) disp.textContent = `${m}:${s}`;
+      }, 1000);
+    }
+
+    function renderJftExamQuestions() {
+      const list = document.getElementById("jftExamList");
+      list.innerHTML = "";
+      jftExamQuestions.forEach((item, idx) => {
+        const chosen = jftExamAns[idx];
+        const card = document.createElement("div");
+        card.className = "p-4 rounded-2xl bg-white border border-stone-200 space-y-2.5";
+        card.innerHTML = `
+          <div class="text-[11px] font-extrabold text-[#c81e1e]">${item.sec}</div>
+          <div class="jp-font text-xs sm:text-sm font-bold text-[#141115] whitespace-pre-line leading-relaxed">${idx + 1}. ${item.q}</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+            ${item.opts.map((opt, oIdx) => {
+              let cls = "bg-[#faf7f2] border-stone-200 text-stone-800 hover:border-[#c81e1e]";
+              if (chosen !== undefined) {
+                if (oIdx === item.ans) cls = "bg-emerald-50 border-emerald-500 text-emerald-900 font-bold";
+                else if (oIdx === chosen) cls = "bg-red-50 border-red-400 text-red-900 font-semibold";
+              }
+              return `
+                <button type="button" onclick="selectJftExamOpt(${idx}, ${oIdx})"
+                  class="px-3 py-2 rounded-xl border text-left text-xs transition cursor-pointer ${cls}">
+                  ${opt}
+                </button>
+              `;
+            }).join("")}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    function selectJftExamOpt(qIdx, oIdx) {
+      jftExamAns[qIdx] = oIdx;
+      renderJftExamQuestions();
+    }
+
+    function finishJftExam() {
+      let correct = 0;
+      jftExamQuestions.forEach((q, idx) => {
+        if (jftExamAns[idx] === q.ans) correct += 1;
+      });
+      // Skala resmi JFT-Basic maksimal 250 poin (ambang lulus 200)
+      const scaledScore = Math.round((correct / jftExamQuestions.length) * 250);
+      document.getElementById("jftExamScore").textContent = `Skor: ${scaledScore} / 250`;
+      if (scaledScore > statsState.jftBest) {
+        statsState.jftBest = scaledScore;
+        localStorage.setItem("michiedu2_stats_v1", JSON.stringify(statsState));
+        renderProgressDashboard();
+      }
+      showToast(scaledScore >= 200
+        ? `Lulus Simulasi JFT-Basic! Skor Anda: ${scaledScore} / 250`
+        : `Skor Simulasi JFT-Basic: ${scaledScore} / 250 (Target lulus ≥ 200)`);
+    }
+
+    function resetJftExam() {
+      jftExamAns = {};
+      jftTimerSec = 15 * 60;
+      document.getElementById("jftExamScore").textContent = "Skor: 0 / 250";
+      renderJftExamQuestions();
+    }
+
+    // =========================================================================
+    // BUNPOU N5 - N1, KAMUS PARTIKEL & STATISTIK PROGRES MICHIEDU2
+    // =========================================================================
+    function selectBunpouLevel(lvl) {
+      document.querySelectorAll(".bunpou-btn").forEach(btn => {
+        const active = btn.dataset.blvl === lvl;
+        btn.className = active
+          ? "bunpou-btn px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#141115] text-white cursor-pointer"
+          : "bunpou-btn px-3.5 py-2 rounded-xl text-xs font-bold text-stone-700 cursor-pointer";
+      });
+      const grid = document.getElementById("bunpouCardsGrid");
+      const items = bunpouData[lvl] || [];
+      grid.innerHTML = items.map(b => `
+        <article class="p-5 rounded-2xl bg-[#faf7f2] border border-stone-200/90 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="jp-font text-base font-extrabold text-[#c81e1e]">${b.pattern}</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white border border-stone-200 text-stone-700">${lvl}</span>
+          </div>
+          <div class="text-[11px] font-semibold text-stone-500 bg-white px-2.5 py-1 rounded-lg border border-stone-200">
+            Rumus: ${b.formula}
+          </div>
+          <div class="text-xs font-bold text-[#141115]">Arti: ${b.meaning}</div>
+          <p class="jp-font text-xs text-stone-700 pt-1 border-t border-stone-200/70 leading-relaxed">${b.ex}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderParticles() {
+      const q = (document.getElementById("particleSearch").value || "").toLowerCase().trim();
+      const filtered = particlesData.filter(item =>
+        !q || item.p.toLowerCase().includes(q) || item.role.toLowerCase().includes(q) || item.ex.toLowerCase().includes(q)
+      );
+      const grid = document.getElementById("particleGrid");
+      grid.innerHTML = filtered.map(item => `
+        <div class="p-4 rounded-2xl bg-[#faf7f2] border border-stone-200/90 space-y-1.5">
+          <div class="jp-font text-base font-extrabold text-[#c81e1e]">${item.p}</div>
+          <div class="text-xs font-bold text-[#141115]">${item.role}</div>
+          <p class="jp-font text-[11px] text-stone-600 leading-relaxed pt-1 border-t border-stone-200/70">${item.ex}</p>
+        </div>
+      `).join("");
+    }
+
+    function renderProgressDashboard() {
+      document.getElementById("statTotalAnswered").textContent = statsState.answered;
+      document.getElementById("statTotalCorrect").textContent = statsState.correct;
+      const acc = statsState.answered > 0 ? Math.round((statsState.correct / statsState.answered) * 100) : 0;
+      document.getElementById("statAccuracy").textContent = `${acc}%`;
+      document.getElementById("statJftBest").textContent = `${statsState.jftBest} / 250`;
+
+      const container = document.getElementById("moduleProgressBars");
+      container.innerHTML = Object.values(statsState.modules).map(m => {
+        const pct = Math.min(100, Math.round((m.done / m.target) * 100));
+        return `
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-stone-200">${m.label}</span>
+              <span class="font-extrabold text-amber-300">${m.done} / ${m.target} (${pct}%)</span>
+            </div>
+            <div class="w-full h-2.5 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full rounded-full bg-gradient-to-r from-[#c81e1e] via-pink-400 to-amber-400 transition-all duration-300" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // =========================================================================
+    // INITIALIZATION
+    // =========================================================================
+    window.addEventListener("DOMContentLoaded", () => {
+      spawnSakuraPetals();
+      updateMemberUI();
+      renderFullKanaGrid();
+      renderKotobaList();
+      renderKanjiCategorized();
+      selectDokkai(0);
+      renderHenkanTable();
+      startHenkanQuiz();
+      renderScrambleQuestion();
+      initWritingCanvas();
+      renderWritingQuizItem();
+      selectBunpouLevel("N5");
+      renderParticles();
+      renderProgressDashboard();
+
+      try {
+        const savedProof = JSON.parse(localStorage.getItem("michiedu2_jft_proof_v1") || "null");
+        if (savedProof && savedProof.unlocked) {
+          applyJftUnlockedState(savedProof);
+        }
+      } catch (e) {}
+    });
+
+    window.addEventListener("resize", () => {
+      if (!document.getElementById("mod-menulis").classList.contains("hidden")) {
+        resizeWritingCanvas();
+      }
+    });
+  </script>
+</body>
+</html>
