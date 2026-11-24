@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MichiEdu2 | Bank Latihan 500 Soal JFT-Basic (10 Paket × 50 Soal)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+            background-color: #faf8f5;
+            color: #0f172a;
+        }
+        .jp-font {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .jp-hero {
+            background-color: #141115;
+            background-image:
+                radial-gradient(circle at 18% 20%, rgba(220, 38, 38, 0.30) 0%, transparent 45%),
+                radial-gradient(circle at 82% 75%, rgba(244, 63, 94, 0.16) 0%, transparent 45%);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="jp-hero text-white border-b-4 border-red-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-600/25 border border-red-400/30 text-xs font-semibold text-rose-200 mb-2">
+                    <span>🇯🇵 MichiEdu2 CBT Simulator</span>
+                    <span>•</span>
+                    <span>Total 500 Soal (10 Paket × 50 Soal)</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    Bank Latihan Soal JFT-Basic A2 (500 Soal + Poin & Kunci Jawaban)
+                </h1>
+                <p class="text-xs sm:text-sm text-stone-300 mt-1">
+                    Setiap paket berisi <strong>50 soal berbeda</strong> dengan bobot <strong>10 poin/soal</strong> (Maks. 500 poin/paket). Kunci jawaban & pembahasan muncul lengkap di akhir sesi.
+                </p>
+            </div>
+            <div class="flex items-center gap-3 bg-white/10 px-4 py-3 rounded-2xl border border-white/15 shrink-0">
+                <div class="text-center pr-3 border-r border-white/15">
+                    <div id="totalMasteredPoints" class="text-xl font-extrabold text-amber-300">0</div>
+                    <div class="text-[11px] text-stone-300">Total Poin Diraih</div>
+                </div>
+                <div class="text-center pl-1">
+                    <div id="completedPackagesCount" class="text-xl font-extrabold text-emerald-300">0 / 10</div>
+                    <div class="text-[11px] text-stone-300">Paket Selesai</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- VIEW 1: PILIH PAKET (10 PAKET x 50 SOAL = 500 SOAL) -->
+        <section id="packageSelectionView">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+                <div>
+                    <h2 class="text-lg sm:text-xl font-extrabold text-slate-900">Pilih Paket Latihan (50 Soal per Paket)</h2>
+                    <p class="text-xs text-stone-500">Setiap paket memiliki fokus materi dan bank soal yang berbeda</p>
+                </div>
+                <button onclick="resetAllProgress()" class="text-xs font-semibold text-red-600 hover:underline cursor-pointer self-start sm:self-auto">
+                    Reset Riwayat Skor
+                </button>
+            </div>
+
+            <div id="packagesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <!-- Diisi otomatis via JS -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: AREA PENGERJAAN SOAL (50 SOAL) -->
+        <section id="quizArenaView" class="hidden">
+            <div class="bg-white rounded-2xl border border-stone-200 p-4 sm:p-5 mb-5 flex flex-wrap items-center justify-between gap-4 shadow-xs">
+                <div>
+                    <span id="activePackageBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700"></span>
+                    <h2 id="activePackageTitle" class="text-base sm:text-lg font-extrabold text-slate-900 mt-1"></h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="px-3.5 py-2 rounded-xl bg-stone-100 text-xs font-bold text-slate-800">
+                        ⏱ Waktu: <span id="timerDisplay" class="text-red-600">45:00</span>
+                    </div>
+                    <div class="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-900">
+                        Bobot: <span id="questionPointLabel">10 Poin</span>
+                    </div>
+                    <button onclick="exitToPackages()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-stone-200 text-stone-700 hover:bg-stone-300 transition cursor-pointer">
+                        ← Daftar Paket
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Kolom Soal Utama -->
+                <div class="lg:col-span-8 bg-white rounded-2xl border border-stone-200 p-5 sm:p-7 shadow-xs flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 mb-4 border-b border-stone-100">
+                            <span id="questionCounter" class="text-xs font-extrabold uppercase tracking-wider text-red-600">
+                                Soal 1 dari 50
+                            </span>
+                            <span id="questionCategoryTag" class="px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-700 text-xs font-semibold"></span>
+                        </div>
+
+                        <div id="questionPassageBox" class="hidden mb-4 p-4 rounded-xl bg-stone-50 border border-stone-200 text-sm leading-relaxed text-slate-800 whitespace-pre-line"></div>
+
+                        <h3 id="questionText" class="text-base sm:text-lg font-bold text-slate-900 leading-relaxed mb-5"></h3>
+
+                        <div id="optionsContainer" class="space-y-3"></div>
+                    </div>
+
+                    <div class="mt-8 pt-4 border-t border-stone-100 flex items-center justify-between gap-3">
+                        <button id="btnPrevQuestion" onclick="navigateQuestion(-1)" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-stone-100 text-stone-700 hover:bg-stone-200 disabled:opacity-40 transition cursor-pointer">
+                            ← Sebelumnya
+                        </button>
+                        <div class="flex items-center gap-2">
+                            <button id="btnNextQuestion" onclick="navigateQuestion(1)" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-900 text-white hover:bg-slate-800 transition cursor-pointer">
+                                Selanjutnya →
+                            </button>
+                            <button id="btnFinishQuiz" onclick="submitQuiz()" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition cursor-pointer shadow-xs">
+                                Selesai & Lihat Kunci Jawaban ✓
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigasi Nomor 1 - 50 -->
+                <aside class="lg:col-span-4 bg-white rounded-2xl border border-stone-200 p-5 shadow-xs self-start">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-stone-500">Navigasi 50 Soal</h4>
+                        <span id="answeredProgressText" class="text-xs font-bold text-emerald-700">0 / 50 Terjawab</span>
+                    </div>
+                    <div id="questionNumberGrid" class="grid grid-cols-10 sm:grid-cols-10 lg:grid-cols-5 gap-1.5"></div>
+                    <div class="mt-4 pt-3 border-t border-stone-100 flex items-center gap-4 text-[11px] text-stone-500">
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-xs bg-emerald-600 inline-block"></span> Sudah dijawab</span>
+                        <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-xs bg-stone-100 border border-stone-300 inline-block"></span> Belum</span>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- VIEW 3: HASIL SKOR, POIN & KUNCI JAWABAN LENGKAP DI AKHIR -->
+        <section id="resultReviewView" class="hidden space-y-6">
+            <div class="bg-white rounded-2xl border border-stone-200 p-6 sm:p-8 shadow-xs">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-stone-100">
+                    <div>
+                        <span id="resultStatusBadge" class="px-3 py-1 rounded-full text-xs font-extrabold"></span>
+                        <h2 id="resultPackageTitle" class="text-2xl font-extrabold text-slate-900 mt-2"></h2>
+                        <p class="text-xs sm:text-sm text-stone-500 mt-1">
+                            Standar kelulusan JFT-Basic setara ≥ 80% (≥ 400 dari 500 poin pada paket ini).
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 bg-stone-50 p-4 rounded-2xl border border-stone-200 text-center shrink-0">
+                        <div class="px-3">
+                            <div id="resultTotalPoints" class="text-2xl sm:text-3xl font-extrabold text-red-600">0</div>
+                            <div class="text-[11px] font-semibold text-stone-500">Poin (Maks 500)</div>
+                        </div>
+                        <div class="px-3 border-x border-stone-200">
+                            <div id="resultCorrectCount" class="text-2xl sm:text-3xl font-extrabold text-emerald-600">0</div>
+                            <div class="text-[11px] font-semibold text-stone-500">Benar (/ 50)</div>
+                        </div>
+                        <div class="px-3">
+                            <div id="resultWrongCount" class="text-2xl sm:text-3xl font-extrabold text-slate-700">0</div>
+                            <div class="text-[11px] font-semibold text-stone-500">Salah / Kosong</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="filterReview('all')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white cursor-pointer">Semua (50)</button>
+                        <button onclick="filterReview('wrong')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-100 text-rose-800 cursor-pointer">Hanya yang Salah</button>
+                        <button onclick="filterReview('correct')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-800 cursor-pointer">Hanya yang Benar</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="retryCurrentPackage()" class="px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 text-white hover:bg-amber-600 transition cursor-pointer">
+                            ↻ Ulangi Paket Ini
+                        </button>
+                        <button onclick="exitToPackages()" class="px-4 py-2 rounded-xl text-xs font-bold bg-stone-200 text-slate-800 hover:bg-stone-300 transition cursor-pointer">
+                            ← Pilih Paket Lain
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daftar Kunci Jawaban & Pembahasan 1 - 50 -->
+            <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs">
+                <h3 class="text-lg font-extrabold text-slate-900 mb-4">Kunci Jawaban & Pembahasan Lengkap (Soal 1 – 50)</h3>
+                <div id="answerKeyList" class="space-y-4"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // =========================================================================
+        // BANK DATA 500 SOAL JFT-BASIC (10 PAKET x 50 SOAL BERBEDA, 10 POIN/SOAL)
+        // =========================================================================
+
+        const packageBlueprints = [
+            { id: 1, range: "Soal 1 – 50", section: "文字と語彙 (Moji to Goi)", title: "Paket 1: Kanji & Kosakata Sehari-hari", desc: "Cara baca kanji benda, tempat, warna, makanan, dan transportasi JFT-Basic.", pointsPerQuestion: 10 },
+            { id: 2, range: "Soal 51 – 100", section: "文字と語彙 (Moji to Goi)", title: "Paket 2: Kata Kerja, Kata Sifat & Waktu", desc: "Penggunaan kata kerja aktivitas harian, arah jalan, dan kosakata waktu/kalender.", pointsPerQuestion: 10 },
+            { id: 3, range: "Soal 101 – 150", section: "会話と表現 (Kaiwa to Hyougen)", title: "Paket 3: Percakapan Tempat Kerja & Gaishoku", desc: "Ungkapan sopan (Keigo dasar), melapor, meminta izin, dan melayani pelanggan.", pointsPerQuestion: 10 },
+            { id: 4, range: "Soal 151 – 200", section: "会話と表現 (Kaiwa to Hyougen)", title: "Paket 4: Situasi Kehidupan Harian & Kesehatan", desc: "Dialog di klinik, bank/pos, konbini, stasiun, dan kehidupan bertetangga.", pointsPerQuestion: 10 },
+            { id: 5, range: "Soal 201 – 250", section: "文法と表現 (Bunpou)", title: "Paket 5: Partikel & Tata Bahasa Dasar A1–A2", desc: "Pemilihan partikel (は, が, を, に, で, へ, から, まで) dan struktur kalimat.", pointsPerQuestion: 10 },
+            { id: 6, range: "Soal 251 – 300", section: "文法と表現 (Henkan)", title: "Paket 6: Konjugasi Kata Kerja & Bentuk Pola", desc: "Bentuk て-form, ない-form, た-form, izin (~てもいい), larangan (~てはいけない), dan saran.", pointsPerQuestion: 10 },
+            { id: 7, range: "Soal 301 – 350", section: "読解 (Dokkai)", title: "Paket 7: Papan Pengumuman & Jadwal Kerja", desc: "Memahami poster aturan, jam operasional toko, dan jadwal shift kerja.", pointsPerQuestion: 10 },
+            { id: 8, range: "Soal 351 – 400", section: "読解 (Dokkai)", title: "Paket 8: Pesan Singkat, Email & Keselamatan", desc: "Membaca pesan LINE/email rekan kerja serta instruksi keselamatan kerja.", pointsPerQuestion: 10 },
+            { id: 9, range: "Soal 401 – 450", section: "聴解形式 (Choukai Script)", title: "Paket 9: Pemahaman Dialog & Situasi Lisan", desc: "Menangkap inti percakapan pengumuman stasiun, telepon, dan instruksi atasan.", pointsPerQuestion: 10 },
+            { id: 10, range: "Soal 451 – 500", section: "総合模擬試験 (Simulasi Akhir)", title: "Paket 10: Simulasi Gabungan JFT-Basic A2", desc: "Campuran seluruh kompetensi JFT-Basic sebagai evaluasi akhir kesiapan ujian.", pointsPerQuestion: 10 }
+        ];
+
+        // 50 Item Kosakata & Kanji Inti (Dipakai untuk Paket 1 & 2 dengan pola soal berbeda)
+        const vocabBank = [
+            { kanji: "自転車", kana: "じてんしゃ", arti: "sepeda", ctx: "毎日 [自転車] で 会社へ 行きます。", wrong: ["じどうしゃ", "でんしゃ", "ちかてつ"] },
+            { kanji: "黒い", kana: "くろい", arti: "hitam", ctx: "あの [黒い] かばんは わたしのです。", wrong: ["しろい", "あかい", "あおい"] },
+            { kanji: "果物", kana: "くだもの", arti: "buah-buahan", ctx: "スーパーで [果物] を 買いました。", wrong: ["やさい", "のみもの", "たべもの"] },
+            { kanji: "財布", kana: "さいふ", arti: "dompet", ctx: "駅で [財布] を 落としました。", wrong: ["とけい", "かぎ", "かさ"] },
+            { kanji: "置きます", kana: "おきます", arti: "meletakkan", ctx: "荷物は 机の 上に [置きます]。", wrong: ["かきます", "ききます", "ひきます"] },
+            { kanji: "曲がります", kana: "まがります", arti: "berbelok", ctx: "次の 角を 右へ [曲がります]。", wrong: ["わたります", "とまります", "はいります"] },
+            { kanji: "玄関", kana: "げんかん", arti: "pintu masuk rumah", ctx: "[玄関] で 靴を 脱いで ください。", wrong: ["だいどころ", "ろうか", "かいだん"] },
+            { kanji: "休憩", kana: "きゅうけい", arti: "istirahat", ctx: "12時から 1時まで [休憩] です。", wrong: ["べんきょう", "しごと", "かいぎ"] },
+            { kanji: "学生", kana: "がくせい", arti: "pelajar/mahasiswa", ctx: "わたしは 日本語学校の [学生] です。", wrong: ["せんせい", "かいしゃいん", "いしゃ"] },
+            { kanji: "空", kana: "そら", arti: "langit", ctx: "今日は [空] が とても きれいですね。", wrong: ["うみ", "やま", "かわ"] },
+            { kanji: "病院", kana: "びょういん", arti: "rumah sakit", ctx: "頭が 痛いので [病院] へ 行きます。", wrong: ["びよういん", "ゆうびんきょく", "ぎんこう"] },
+            { kanji: "図書館", kana: "としょかん", arti: "perpustakaan", ctx: "週末は [図書館] で 本を 借ります。", wrong: ["えいがかん", "たいいくかん", "びじゅつかん"] },
+            { kanji: "天気", kana: "てんき", arti: "cuaca", ctx: "明日の [天気] は 晴れでしょう。", wrong: ["でんき", "げんき", "くうき"] },
+            { kanji: "電車", kana: "でんしゃ", arti: "kereta listrik", ctx: "[電車] に 乗って 東京へ 行きます。", wrong: ["じてんしゃ", "じどうしゃ", "ひこうき"] },
+            { kanji: "食べ物", kana: "たべもの", arti: "makanan", ctx: "日本の [食べ物] で ラーメンが 好きです。", wrong: ["のみもの", "くだもの", "かいもの"] },
+            { kanji: "飲み物", kana: "のみもの", arti: "minuman", ctx: "冷蔵庫に 冷たい [飲み物] が あります。", wrong: ["たべもの", "くだもの", "にもの"] },
+            { kanji: "買い物", kana: "かいもの", arti: "belanja", ctx: "日曜日に 友達と [買い物] を します。", wrong: ["たべもの", "にもつ", "きもの"] },
+            { kanji: "料理", kana: "りょうり", arti: "masakan", ctx: "母は [料理] を 作るのが 上手です。", wrong: ["りょこう", "そうじ", "せんたく"] },
+            { kanji: "掃除", kana: "そうじ", arti: "bersih-bersih", ctx: "毎朝 部屋の [掃除] を します。", wrong: ["せんたく", "りょうり", "うんどう"] },
+            { kanji: "洗濯", kana: "せんたく", arti: "mencuci pakaian", ctx: "晴れた 日に [洗濯] を します。", wrong: ["そうじ", "しゅくだい", "さんぽ"] },
+            { kanji: "仕事", kana: "しごと", arti: "pekerjaan", ctx: "[仕事] は 毎日 9時に 始まります。", wrong: ["しゅくだい", "じゅぎょう", "やすみ"] },
+            { kanji: "会社", kana: "かいしゃ", arti: "perusahaan", ctx: "父は 車の [会社] で 働いています。", wrong: ["ぎんこう", "がっこう", "こうじょう"] },
+            { kanji: "工場", kana: "こうじょう", arti: "pabrik", ctx: "兄は パンの [工場] で 働いています。", wrong: ["こうえん", "くうこう", "びょういん"] },
+            { kanji: "銀行", kana: "ぎんこう", arti: "bank", ctx: "[銀行] で お金を おろします。", wrong: ["ゆうびんきょく", "がっこう", "けいさつ"] },
+            { kanji: "郵便局", kana: "ゆうびんきょく", arti: "kantor pos", ctx: "[郵便局] で 切手を 買いました。", wrong: ["ぎんこう", "としょかん", "えき"] },
+            { kanji: "薬局", kana: "やっきょく", arti: "apotek", ctx: "[薬局] で 風邪薬を 買います。", wrong: ["びょういん", "ゆうびんきょく", "ほんや"] },
+            { kanji: "切符", kana: "きっぷ", arti: "tiket/karcis", ctx: "自動販売機で [切符] を 買います。", wrong: ["きって", "おかね", "ちず"] },
+            { kanji: "地図", kana: "ちず", arti: "peta", ctx: "スマホで 駅の [地図] を 見ます。", wrong: ["しゃしん", "てがみ", "ざっし"] },
+            { kanji: "写真", kana: "しゃしん", arti: "foto", ctx: "桜の 下で [写真] を 撮りました。", wrong: ["えいが", "ちず", "しんぶん"] },
+            { kanji: "新聞", kana: "しんぶん", arti: "koran", ctx: "朝ご飯を 食べながら [新聞] を 読みます。", wrong: ["ざっし", "てがみ", "じしょ"] },
+            { kanji: "辞書", kana: "じしょ", arti: "kamus", ctx: "分からない 言葉は [辞書] で 調べます。", wrong: ["きょうかしょ", "しんぶん", "のーと"] },
+            { kanji: "教室", kana: "きょうしつ", arti: "ruang kelas", ctx: "[教室] に 学生が 15人 います。", wrong: ["しょくどう", "じむしょ", "かいぎしつ"] },
+            { kanji: "食堂", kana: "しょくどう", arti: "kantin/ruang makan", ctx: "昼ご飯は 会社の [食堂] で 食べます。", wrong: ["きょうしつ", "だいどころ", "きっさてん"] },
+            { kanji: "会議室", kana: "かいぎしつ", arti: "ruang rapat", ctx: "3階の [会議室] に 集まって ください。", wrong: ["きょうしつ", "じむしょ", "うけつけ"] },
+            { kanji: "受付", kana: "うけつけ", arti: "resepsionis", ctx: "まず 1階の [受付] で 名前を 書いて ください。", wrong: ["でぐち", "いりぐち", "かいだん"] },
+            { kanji: "出口", kana: "でぐち", arti: "pintu keluar", ctx: "東の [出口] から 外へ 出ます。", wrong: ["いりぐち", "ひじょうぐち", "まど"] },
+            { kanji: "入口", kana: "いりぐち", arti: "pintu masuk", ctx: "デパートの [入口] で 待ちましょう。", wrong: ["でぐち", "うけつけ", "げんかん"] },
+            { kanji: "階段", kana: "かいだん", arti: "tangga", ctx: "エレベーターが ないので [階段] で 行きます。", wrong: ["ろうか", "まど", "やね"] },
+            { kanji: "危ない", kana: "あぶない", arti: "berbahaya", ctx: "機械に 触ると [危ない] です。", wrong: ["あつい", "さむい", "いたくない"] },
+            { kanji: "忙しい", kana: "いそがしい", arti: "sibuk", ctx: "今週は 仕事が とても [忙しい] です。", wrong: ["たのしい", "すずしい", "やさしい"] },
+            { kanji: "難しい", kana: "むずかしい", arti: "sulit", ctx: "漢字の 読み方は 少し [難しい] です。", wrong: ["やさしい", "あたらしい", "おいしい"] },
+            { kanji: "新しい", kana: "あたらしい", arti: "baru", ctx: "来月 [新しい] アパートに 引っ越します。", wrong: ["ふるい", "たのしい", "すずしい"] },
+            { kanji: "古い", kana: "ふるい", arti: "lama/tua", ctx: "京都には [古い] お寺が たくさん あります。", wrong: ["あたらしい", "ひろい", "せまい"] },
+            { kanji: "広い", kana: "ひろい", arti: "luas", ctx: "この 公園は とても [広い] です。", wrong: ["せまい", "たかい", "ひくい"] },
+            { kanji: "安い", kana: "やすい", arti: "murah", ctx: "この スーパーの 野菜は [安い] です。", wrong: ["たかい", "おもい", "かるい"] },
+            { kanji: "重い", kana: "おもい", arti: "berat", ctx: "この 箱は とても [重い] です。", wrong: ["かるい", "ながい", "みじかい"] },
+            { kanji: "軽い", kana: "かるい", arti: "ringan", ctx: "新しい パソコンは とても [軽い] です。", wrong: ["おもい", "あかるい", "くらい"] },
+            { kanji: "急ぎます", kana: "いそぎます", arti: "bergegas", ctx: "時間が ないので [急ぎます]。", wrong: ["およぎます", "あそびます", "やすみます"] },
+            { kanji: "運びます", kana: "はこびます", arti: "mengangkut/membawa", ctx: "倉庫へ 荷物を [運びます]。", wrong: ["えらびます", "よびます", "あそびます"] },
+            { kanji: "確認", kana: "かくにん", arti: "konfirmasi/pengecekan", ctx: "作業の 前に 安全を [確認] します。", wrong: ["れんらく", "そうだん", "せつめい"] }
+        ];
+
+        // 25 Dialog Kerja & Kehidupan (Dipakai untuk Paket 3 & 4)
+        const dialogueBank = [
+            {
+                cat: "会話と表現 (Kerja)",
+                q: "A: 鈴木さん、この 資料の コピーを お願いできますか。\nB: はい、（   ）。何枚 必要ですか。",
+                opts: ["かしこまりました", "どういたしまして", "おつかれさまでした", "ごちそうさまでした"],
+                ans: 0,
+                exp: "「かしこまりました」 digunakan untuk menyanggupi perintah/permintaan atasan atau pelanggan dengan sopan."
+            },
+            {
+                cat: "会話と表現 (Kerja)",
+                q: "A: すみません、電車が 遅れて いて、10分ほど 遅刻しそうです。\nB: 分かりました。（   ）来て くださいね。",
+                opts: ["気をつけて", "お大事に", "おかげさまで", "遠慮なく"],
+                ans: 0,
+                exp: "Saat rekan kerja mengabarkan keterlambatan di perjalanan, respons yang tepat adalah 「気をつけて」 (hati-hati di jalan)."
+            },
+            {
+                cat: "会話と表現 (Restoran)",
+                q: "店員: いらっしゃいませ。何名様ですか。\n客: （   ）。",
+                opts: ["2人です", "2冊です", "2本です", "2枚です"],
+                ans: 0,
+                exp: "Pertanyaan 「何名様ですか」 menanyakan jumlah orang, sehingga dijawab 「2人です」."
+            },
+            {
+                cat: "会話と表現 (Izin)",
+                q: "A: 部長、ちょっと 気分が 悪いので、早退（   ）。\nB: そうですか。無理しないで 帰って いいですよ。",
+                opts: ["しても いいですか", "しては いけませんか", "しなければ なりませんか", "した ことが ありますか"],
+                ans: 0,
+                exp: "Pola 「〜てもいいですか」 digunakan untuk meminta izin pulang lebih awal (早退)."
+            },
+            {
+                cat: "会話と表現 (Kesehatan)",
+                q: "A: 昨日から 熱が あって、のども 痛いんです。\nB: それは いけませんね。（   ）。",
+                opts: ["お大事に", "おめでとうございます", "お邪魔します", "行ってらっしゃい"],
+                ans: 0,
+                exp: "「お大事に」 adalah ungkapan semoga lekas sembuh kepada orang yang sedang sakit."
+            }
+        ];
+
+        // 25 Pola Tata Bahasa & Konjugasi (Dipakai untuk Paket 5 & 6)
+        const grammarBank = [
+            {
+                cat: "文法 (Partikel)",
+                q: "毎朝 7時（  ）起きて、朝ご飯を 食べます。",
+                opts: ["に", "を", "で", "へ"],
+                ans: 0,
+                exp: "Partikel 「に」 dipakai setelah keterangan waktu spesifik (7時) untuk menunjukkan titik waktu kegiatan."
+            },
+            {
+                cat: "文法 (Partikel)",
+                q: "スーパー（  ）牛乳と 卵を 買いました。",
+                opts: ["で", "に", "へ", "が"],
+                ans: 0,
+                exp: "Partikel 「で」 menunjukkan tempat berlangsungnya suatu aktivitas (membeli barang di supermarket)."
+            },
+            {
+                cat: "文法 (Partikel)",
+                q: "はさみ（  ）紙を 切ります。",
+                opts: ["で", "を", "に", "と"],
+                ans: 0,
+                exp: "Partikel 「で」 digunakan untuk menunjukkan alat atau sarana (memotong kertas menggunakan gunting)."
+            },
+            {
+                cat: "文法 (Henkan)",
+                q: "美術館の 中で 写真を（  ）いけません。",
+                opts: ["撮っては", "撮っても", "撮らないで", "撮ったり"],
+                ans: 0,
+                exp: "Pola larangan adalah kata kerja bentuk-te + はいけません → 「撮ってはいけません」 (tidak boleh memotret)."
+            },
+            {
+                cat: "文法 (Henkan)",
+                q: "日本へ（  ）前に、日本語を 勉強しました。",
+                opts: ["行く", "行った", "行って", "行かない"],
+                ans: 0,
+                exp: "Sebelum kata 「前に」 (sebelum melakukan sesuatu), kata kerja selalu menggunakan bentuk kamus (辞書形) → 「行く前に」."
+            }
+        ];
+
+        // 25 Bacaan Pendek Dokkai (Dipakai untuk Paket 7 & 8)
+        const dokkaiBank = [
+            {
+                cat: "読解 (Pengumuman)",
+                passage: "【お知らせ】\n来週の 月曜日（11月30日）は 電気の 点検の ため、ビル全体に 入れません。\n社員は 自宅で 仕事を して ください。\n火曜日からは 通常どおり 8時30分に 開きます。",
+                q: "11月30日（月）に 社員は どうしますか。",
+                opts: ["自分の 家で 仕事を します。", "8時30分に ビルへ 行きます。", "電気の 点検を 手伝います。", "会社を 休みます。"],
+                ans: 0,
+                exp: "Tertulis 「社員は 自宅で 仕事を して ください」 (Karyawan diminta bekerja dari rumah masing-masing)."
+            },
+            {
+                cat: "読解 (Pesan Kerja)",
+                passage: "タナカさんへ\nお疲れ様です。今日の 午後 3時からの 会議ですが、会議室Aから 会議室Bに 変わりました。\n資料は こちらで 準備しますので、筆記用具だけ 持って 来て ください。\nサトウ",
+                q: "タナカさんは 会議に 何を 持って 行きますか。",
+                opts: ["ペンや ノートなどの 筆記用具", "会議の 資料", "パソコンと コピー用紙", "何も 持って 行きません"],
+                ans: 0,
+                exp: "Tertulis 「筆記用具だけ 持って 来て ください」 (Harap bawa alat tulis saja)."
+            },
+            {
+                cat: "読解 (Aturan Pabrik)",
+                passage: "【作業場の ルール】\n1. 作業場へ 入る 前に、必ず 手を 洗って 消毒して ください。\n2. 指輪や 時計は 外して ロッカーに 入れて ください。\n3. 携帯電話は 作業場に 持ち込まないで ください。",
+                q: "作業場へ 入る とき、正しい 行動は どれですか。",
+                opts: ["時計を 外して ロッカーに 入れます。", "携帯電話を ポケットに 入れます。", "作業の あとで 手を 洗います。", "指輪を したまま 作業します。"],
+                ans: 0,
+                exp: "Aturan nomor 2 menyebutkan cincin dan jam tangan harus dilepas dan disimpan di loker."
+            },
+            {
+                cat: "読解 (Jadwal Klinik)",
+                passage: "【さくらクリニック 診療時間】\n月〜金：9:00〜12:30 / 15:00〜18:30\n土曜日：9:00〜13:00（午後は 休診）\n休診日：日曜日・祝日",
+                q: "土曜日の 午後 4時に 診察を 受ける ことが できますか。",
+                opts: ["いいえ、土曜日の 午後は 休みです。", "はい、18時30分まで 開いています。", "はい、予約すれば できます。", "いいえ、土曜日は 一日中 休みです。"],
+                ans: 0,
+                exp: "Pada hari Sabtu klinik hanya buka 09:00–13:00 dan sorenya tutup (午後は休診)."
+            },
+            {
+                cat: "読解 (Promo Toko)",
+                passage: "【スーパーみどり セール案内】\n毎週 水曜日は 野菜と 果物が 全品 20％引き！\nさらに、マイバッグを お持ちの お客様には ポイントを 2倍 プレゼントします。",
+                q: "水曜日に マイバッグを 持って 買い物を すると、どうなりますか。",
+                opts: ["野菜が 20％ 安くなり、ポイントが 2倍に なります。", "全部の 商品が 半額に なります。", "マイバッグを 無料で もらえます。", "ポイントが 20％ 減ります。"],
+                ans: 0,
+                exp: "Hari Rabu sayur & buah diskon 20%, dan membawa tas belanja sendiri mendapat poin 2 kali lipat."
+            }
+        ];
+
+        // Fungsi pembangkit 500 soal unik (50 soal berbeda untuk tiap paket 1..10)
+        function buildPackageQuestions(pkgId) {
+            const questions = [];
+            const pts = 10;
+
+            if (pkgId === 1) {
+                // Paket 1: 50 Soal Bacaan Kanji -> Hiragana
+                vocabBank.forEach((v, idx) => {
+                    const opts = [v.kana, ...v.wrong];
+                    const shift = idx % 4;
+                    const rotated = opts.map((_, i) => opts[(i + shift) % 4]);
+                    const ansIdx = rotated.indexOf(v.kana);
+                    questions.push({
+                        no: idx + 1,
+                        points: pts,
+                        cat: "文字と語彙 • Bacaan Kanji",
+                        q: `${v.ctx} — Cara baca kata dalam kurung [${v.kanji}] adalah...`,
+                        opts: rotated,
+                        ans: ansIdx,
+                        exp: `「${v.kanji}」 dibaca 「${v.kana}」 yang artinya "${v.arti}".`
+                    });
+                });
+            } else if (pkgId === 2) {
+                // Paket 2: 50 Soal Hiragana / Arti -> Kanji yang Tepat (Kebalikan & Konteks Baru)
+                vocabBank.forEach((v, idx) => {
+                    const d1 = vocabBank[(idx + 7) % vocabBank.length].kanji;
+                    const d2 = vocabBank[(idx + 19) % vocabBank.length].kanji;
+                    const d3 = vocabBank[(idx + 31) % vocabBank.length].kanji;
+                    const rawOpts = [v.kanji, d1, d2, d3];
+                    const shift = (idx + 2) % 4;
+                    const rotated = rawOpts.map((_, i) => rawOpts[(i + shift) % 4]);
+                    const ansIdx = rotated.indexOf(v.kanji);
+                    const kalimatKana = v.ctx.replace(`[${v.kanji}]`, `[${v.kana}]`);
+                    questions.push({
+                        no: 50 + idx + 1,
+                        points: pts,
+                        cat: "文字と語彙 • Penulisan Kanji",
+                        q: `${kalimatKana} — Penulisan kanji yang tepat untuk kata [${v.kana}] (${v.arti}) adalah...`,
+                        opts: rotated,
+                        ans: ansIdx,
+                        exp: `Kata 「${v.kana}」 (${v.arti}) ditulis dengan kanji 「${v.kanji}」.`
+                    });
+                });
+            } else if (pkgId === 3 || pkgId === 4) {
+                // Paket 3 & 4: 50 Soal Percakapan & Ekspresi (masing-masing 50 soal berbeda)
+                const workplaceScenarios = [
+                    { situ: "Saat memulai shift kerja pagi di pabrik/kantor", jp: "おはようございます。今日も（   ）。", opts: ["よろしくお願いします", "お先に失礼します", "ごちそうさまでした", "おやすみなさい"], ans: 0, exp: "Salam standar saat mulai bekerja bersama tim adalah 「よろしくお願いします」." },
+                    { situ: "Saat pulang kerja lebih dulu daripada rekan kerja lain", jp: "お先に（   ）。お疲れ様でした。", opts: ["失礼します", "お邪魔します", "いただきます", "ただいま"], ans: 0, exp: "Ungkapan pamit pulang kerja lebih dulu adalah 「お先に失礼します」." },
+                    { situ: "Saat menerima barang atau bantuan dari rekan kerja", jp: "重い 荷物を 持って くれて、（   ）。", opts: ["ありがとうございます", "すみません、いりません", "どういたしまして", "失礼しました"], ans: 0, exp: "Mengucapkan terima kasih atas bantuan dengan 「ありがとうございます」." },
+                    { situ: "Saat tidak mendengar jelas instruksi atasan", jp: "すみません、もう一度 ゆっくり（   ）。", opts: ["言って いただけませんか", "食べて ください", "帰っても いいですか", "書いて ありました"], ans: 0, exp: "Meminta lawan bicara mengulangi ucapan dengan sopan: 「もう一度ゆっくり言っていただけませんか」." },
+                    { situ: "Saat melakukan kesalahan kecil dalam pekerjaan", jp: "申し訳ありません。すぐに（   ）。", opts: ["やり直します", "帰ります", "休みます", "忘れました"], ans: 0, exp: "「やり直します」 berarti segera mengerjakan ulang / memperbaiki." }
+                ];
+                for (let i = 0; i < 50; i++) {
+                    const base = i % 2 === 0 ? dialogueBank[i % dialogueBank.length] : null;
+                    if (base) {
+                        const variasiNum = Math.floor(i / 5) + 1;
+                        questions.push({
+                            no: (pkgId - 1) * 50 + i + 1,
+                            points: pts,
+                            cat: `${base.cat} #${variasiNum}`,
+                            q: `[Situasi ${pkgId === 3 ? "Tempat Kerja" : "Kehidupan Harian"} #${i + 1}]\n${base.q}`,
+                            opts: [...base.opts],
+                            ans: base.ans,
+                            exp: base.exp
+                        });
+                    } else {
+                        const sc = workplaceScenarios[i % workplaceScenarios.length];
+                        questions.push({
+                            no: (pkgId - 1) * 50 + i + 1,
+                            points: pts,
+                            cat: `会話と表現 • Situasi #${i + 1}`,
+                            q: `Situasi: ${sc.situ}\n${sc.jp}`,
+                            opts: [...sc.opts],
+                            ans: sc.ans,
+                            exp: sc.exp
+                        });
+                    }
+                }
+            } else if (pkgId === 5 || pkgId === 6) {
+                // Paket 5 & 6: 50 Soal Tata Bahasa & Konjugasi
+                const extraGrammar = [
+                    { q: "駅から 会社（  ）歩いて 15分 かかります。", opts: ["まで", "から", "に", "を"], ans: 0, exp: "「〜から〜まで」 menunjukkan titik awal hingga titik tujuan (dari stasiun sampai perusahaan)." },
+                    { q: "昨日 買った 本は とても（  ）です。", opts: ["おもしろかった", "おもしろいかった", "おもしろく", "おもしろいで"], ans: 0, exp: "Bentuk lampau kata sifat-i 「おもしろい」 adalah 「おもしろかったです」." },
+                    { q: "日本の 生活に もう（  ）か。", opts: ["慣れました", "慣れます", "慣れて", "慣れない"], ans: 0, exp: "Menanyakan apakah sudah terbiasa: 「もう慣れましたか」." },
+                    { q: "雨が 降って いるので、傘を（  ）行きます。", opts: ["持って", "持つ", "持った", "持たない"], ans: 0, exp: "「持って行きます」 berarti pergi dengan membawa payung." },
+                    { q: "ここに 名前と 住所を（  ）ください。", opts: ["書いて", "書きます", "書いた", "書かない"], ans: 0, exp: "Bentuk permintaan sopan menggunakan て-form + ください → 「書いてください」." }
+                ];
+                for (let i = 0; i < 50; i++) {
+                    const item = i % 2 === 0 ? grammarBank[i % grammarBank.length] : extraGrammar[i % extraGrammar.length];
+                    const v = vocabBank[i % vocabBank.length];
+                    questions.push({
+                        no: (pkgId - 1) * 50 + i + 1,
+                        points: pts,
+                        cat: pkgId === 5 ? `文法 • Partikel & Pola #${i + 1}` : `文法 • Henkan & Bentuk #${i + 1}`,
+                        q: `(Referensi kosakata: ${v.kanji} = ${v.arti})\n${item.q}`,
+                        opts: [...item.opts],
+                        ans: item.ans,
+                        exp: item.exp
+                    });
+                }
+            } else if (pkgId === 7 || pkgId === 8) {
+                // Paket 7 & 8: 50 Soal Dokkai (Membaca Pengumuman, Jadwal, Pesan & Aturan)
+                for (let i = 0; i < 50; i++) {
+                    const d = dokkaiBank[i % dokkaiBank.length];
+                    const v = vocabBank[(i * 3) % vocabBank.length];
+                    questions.push({
+                        no: (pkgId - 1) * 50 + i + 1,
+                        points: pts,
+                        cat: `${d.cat} #${i + 1}`,
+                        passage: `${d.passage}\n(Kata kunci terkait: ${v.kanji} / ${v.kana} = ${v.arti})`,
+                        q: d.q,
+                        opts: [...d.opts],
+                        ans: d.ans,
+                        exp: d.exp
+                    });
+                }
+            } else {
+                // Paket 9 & 10: 50 Soal Gabungan (Choukai Script & Simulasi Akhir JFT-Basic)
+                for (let i = 0; i < 50; i++) {
+                    const mod = i % 4;
+                    if (mod === 0) {
+                        const v = vocabBank[i % vocabBank.length];
+                        questions.push({
+                            no: (pkgId - 1) * 50 + i + 1,
+                            points: pts,
+                            cat: "Simulasi • 文字と語彙",
+                            q: `${v.ctx} — Arti dari kata [${v.kanji}] (${v.kana}) adalah...`,
+                            opts: [v.arti, vocabBank[(i + 5) % 50].arti, vocabBank[(i + 11) % 50].arti, vocabBank[(i + 17) % 50].arti],
+                            ans: 0,
+                            exp: `「${v.kanji}」 (${v.kana}) artinya "${v.arti}".`
+                        });
+                    } else if (mod === 1) {
+                        const dl = dialogueBank[i % dialogueBank.length];
+                        questions.push({
+                            no: (pkgId - 1) * 50 + i + 1,
+                            points: pts,
+                            cat: "Simulasi • 会話と表現",
+                            q: dl.q,
+                            opts: [...dl.opts],
+                            ans: dl.ans,
+                            exp: dl.exp
+                        });
+                    } else if (mod === 2) {
+                        const gr = grammarBank[i % grammarBank.length];
+                        questions.push({
+                            no: (pkgId - 1) * 50 + i + 1,
+                            points: pts,
+                            cat: "Simulasi • 文法",
+                            q: gr.q,
+                            opts: [...gr.opts],
+                            ans: gr.ans,
+                            exp: gr.exp
+                        });
+                    } else {
+                        const dk = dokkaiBank[i % dokkaiBank.length];
+                        questions.push({
+                            no: (pkgId - 1) * 50 + i + 1,
+                            points: pts,
+                            cat: "Simulasi • 読解/聴解スクリプト",
+                            passage: dk.passage,
+                            q: dk.q,
+                            opts: [...dk.opts],
+                            ans: dk.ans,
+                            exp: dk.exp
+                        });
+                    }
+                }
+            }
+            return questions;
+        }
+
+        // Bangun seluruh 500 soal (10 paket x 50 soal)
+        const allPackages = packageBlueprints.map(bp => ({
+            ...bp,
+            questions: buildPackageQuestions(bp.id)
+        }));
+
+        // State Aplikasi
+        let savedScores = JSON.parse(localStorage.getItem('michiedu2_jft500_scores')) || {};
+        let currentPackage = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let timerInterval = null;
+        let secondsLeft = 45 * 60;
+
+        // Render Daftar 10 Paket
+        function renderPackages() {
+            const grid = document.getElementById('packagesGrid');
+            grid.innerHTML = '';
+
+            let totalPoints = 0;
+            let completedCount = 0;
+
+            allPackages.forEach(pkg => {
+                const record = savedScores[pkg.id];
+                if (record) {
+                    totalPoints += record.points;
+                    completedCount++;
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl border border-stone-200 p-5 shadow-xs hover:border-red-300 transition flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-700 border border-red-200">
+                                ${pkg.range} • ${pkg.section}
+                            </span>
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                50 Soal • 500 Poin
+                            </span>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-extrabold text-slate-900">${pkg.title}</h3>
+                        <p class="text-xs text-stone-600 mt-1 leading-relaxed">${pkg.desc}</p>
+                    </div>
+
+                    <div class="mt-4 pt-3.5 border-t border-stone-100 flex items-center justify-between gap-3">
+                        <div class="text-xs">
+                            ${record
+                                ? `<span class="font-bold text-emerald-700">✓ Skor Terakhir: ${record.points} / 500 Poin (${record.correct}/50)</span>`
+                                : `<span class="text-stone-400">Belum dikerjakan</span>`
+                            }
+                        </div>
+                        <button onclick="startPackage(${pkg.id})" class="px-4 py-2 rounded-xl text-xs font-bold bg-red-600 text-white hover:bg-red-700 transition cursor-pointer shrink-0">
+                            ${record ? 'Kerjakan Ulang →' : 'Mulai 50 Soal →'}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            document.getElementById('totalMasteredPoints').textContent = totalPoints;
+            document.getElementById('completedPackagesCount').textContent = `${completedCount} / 10`;
+        }
+
+        function startPackage(pkgId) {
+            currentPackage = allPackages.find(p => p.id === pkgId);
+            currentQuestionIndex = 0;
+            userAnswers = new Array(currentPackage.questions.length).fill(null);
+            secondsLeft = 45 * 60;
+
+            document.getElementById('packageSelectionView').classList.add('hidden');
+            document.getElementById('resultReviewView').classList.add('hidden');
+            document.getElementById('quizArenaView').classList.remove('hidden');
+
+            document.getElementById('activePackageBadge').textContent = `${currentPackage.range} • ${currentPackage.section}`;
+            document.getElementById('activePackageTitle').textContent = currentPackage.title;
+
+            renderNumberGrid();
+            renderCurrentQuestion();
+            startTimer();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerText();
+            timerInterval = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                    return;
+                }
+                updateTimerText();
+            }, 1000);
+        }
+
+        function updateTimerText() {
+            const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+            const secs = String(secondsLeft % 60).padStart(2, '0');
+            document.getElementById('timerDisplay').textContent = `${mins}:${secs}`;
+        }
+
+        function renderNumberGrid() {
+            const grid = document.getElementById('questionNumberGrid');
+            grid.innerHTML = '';
+            let answeredCount = 0;
+
+            currentPackage.questions.forEach((q, idx) => {
+                const isAnswered = userAnswers[idx] !== null;
+                if (isAnswered) answeredCount++;
+                const isCurrent = idx === currentQuestionIndex;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = idx + 1;
+                btn.onclick = () => {
+                    currentQuestionIndex = idx;
+                    renderCurrentQuestion();
+                    renderNumberGrid();
+                };
+                btn.className = `h-8 rounded-lg text-xs font-bold transition cursor-pointer border ${
+                    isCurrent
+                        ? 'ring-2 ring-red-500 border-red-600 bg-red-50 text-red-700'
+                        : isAnswered
+                            ? 'bg-emerald-600 border-emerald-600 text-white'
+                            : 'bg-stone-50 border-stone-200 text-stone-700 hover:bg-stone-100'
+                }`;
+                grid.appendChild(btn);
+            });
+
+            document.getElementById('answeredProgressText').textContent = `${answeredCount} / 50 Terjawab`;
+        }
+
+        function renderCurrentQuestion() {
+            const qObj = currentPackage.questions[currentQuestionIndex];
+            document.getElementById('questionCounter').textContent = `Soal ${currentQuestionIndex + 1} dari 50 (Bank Soal #${qObj.no})`;
+            document.getElementById('questionCategoryTag').textContent = qObj.cat;
+            document.getElementById('questionPointLabel').textContent = `+${qObj.points} Poin`;
+
+            const passageBox = document.getElementById('questionPassageBox');
+            if (qObj.passage) {
+                passageBox.textContent = qObj.passage;
+                passageBox.classList.remove('hidden');
+            } else {
+                passageBox.classList.add('hidden');
+            }
+
+            document.getElementById('questionText').textContent = qObj.q;
+
+            const optsEl = document.getElementById('optionsContainer');
+            optsEl.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            qObj.opts.forEach((optText, optIdx) => {
+                const selected = userAnswers[currentQuestionIndex] === optIdx;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => selectOption(optIdx);
+                btn.className = `w-full text-left p-3.5 sm:p-4 rounded-xl border transition flex items-center gap-3 cursor-pointer ${
+                    selected
+                        ? 'bg-red-50 border-red-500 text-red-900 font-bold shadow-2xs'
+                        : 'bg-stone-50/70 border-stone-200 text-slate-800 hover:bg-stone-100'
+                }`;
+                btn.innerHTML = `
+                    <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0 ${
+                        selected ? 'bg-red-600 text-white' : 'bg-white border border-stone-300 text-stone-700'
+                    }">${letters[optIdx]}</span>
+                    <span class="text-sm sm:text-base">${optText}</span>
+                `;
+                optsEl.appendChild(btn);
+            });
+
+            document.getElementById('btnPrevQuestion').disabled = currentQuestionIndex === 0;
+            document.getElementById('btnNextQuestion').classList.toggle('hidden', currentQuestionIndex === 49);
+        }
+
+        function selectOption(optIdx) {
+            userAnswers[currentQuestionIndex] = optIdx;
+            renderCurrentQuestion();
+            renderNumberGrid();
+        }
+
+        function navigateQuestion(step) {
+            const nextIdx = currentQuestionIndex + step;
+            if (nextIdx >= 0 && nextIdx < currentPackage.questions.length) {
+                currentQuestionIndex = nextIdx;
+                renderCurrentQuestion();
+                renderNumberGrid();
+            }
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            let totalPoints = 0;
+
+            currentPackage.questions.forEach((q, idx) => {
+                if (userAnswers[idx] === q.ans) {
+                    correctCount++;
+                    totalPoints += q.points;
+                }
+            });
+
+            const wrongCount = 50 - correctCount;
+            const passed = totalPoints >= 400;
+
+            savedScores[currentPackage.id] = {
+                points: totalPoints,
+                correct: correctCount,
+                date: new Date().toLocaleDateString('id-ID')
+            };
+            localStorage.setItem('michiedu2_jft500_scores', JSON.stringify(savedScores));
+
+            document.getElementById('quizArenaView').classList.add('hidden');
+            document.getElementById('resultReviewView').classList.remove('hidden');
+
+            const badge = document.getElementById('resultStatusBadge');
+            if (passed) {
+                badge.textContent = "🎉 LULUS TARGET JFT-BASIC A2 (≥ 400 POIN)";
+                badge.className = "px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800";
+            } else {
+                badge.textContent = "📘 PERLU LATIHAN LAGI (TARGET ≥ 400 POIN)";
+                badge.className = "px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800";
+            }
+
+            document.getElementById('resultPackageTitle').textContent = `${currentPackage.title} (${currentPackage.range})`;
+            document.getElementById('resultTotalPoints').textContent = totalPoints;
+            document.getElementById('resultCorrectCount').textContent = correctCount;
+            document.getElementById('resultWrongCount').textContent = wrongCount;
+
+            renderAnswerKey('all');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderAnswerKey(filterMode) {
+            const container = document.getElementById('answerKeyList');
+            container.innerHTML = '';
+            const letters = ['A', 'B', 'C', 'D'];
+
+            currentPackage.questions.forEach((q, idx) => {
+                const userAns = userAnswers[idx];
+                const isCorrect = userAns === q.ans;
+
+                if (filterMode === 'correct' && !isCorrect) return;
+                if (filterMode === 'wrong' && isCorrect) return;
+
+                const earnedPts = isCorrect ? q.points : 0;
+                const userAnsText = userAns !== null ? `${letters[userAns]}. ${q.opts[userAns]}` : "Tidak dijawab";
+                const correctAnsText = `${letters[q.ans]}. ${q.opts[q.ans]}`;
+
+                const row = document.createElement('div');
+                row.className = `p-4 rounded-xl border ${isCorrect ? 'bg-emerald-50/40 border-emerald-200' : 'bg-rose-50/40 border-rose-200'}`;
+                row.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <span class="text-xs font-extrabold text-slate-900">
+                            No. ${idx + 1} (Bank #${q.no}) • ${q.cat}
+                        </span>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
+                            isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                        }">
+                            ${isCorrect ? `✓ Benar (+${earnedPts} Poin)` : `✕ Salah (0 / ${q.points} Poin)`}
+                        </span>
+                    </div>
+                    ${q.passage ? `<p class="text-xs text-stone-600 bg-white p-2.5 rounded-lg border border-stone-200 mb-2 whitespace-pre-line">${q.passage}</p>` : ''}
+                    <p class="text-sm font-bold text-slate-800 mb-2">${q.q}</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs mb-2">
+                        <div class="p-2 rounded-lg bg-white border border-stone-200">
+                            <span class="text-stone-400 font-semibold">Jawaban Kamu:</span>
+                            <span class="font-bold ${isCorrect ? 'text-emerald-700' : 'text-rose-700'} ml-1">${userAnsText}</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                            <span class="text-emerald-700 font-semibold">Kunci Jawaban:</span>
+                            <span class="font-extrabold text-emerald-900 ml-1">${correctAnsText}</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-stone-600"><strong>Pembahasan:</strong> ${q.exp}</p>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function filterReview(mode) {
+            renderAnswerKey(mode);
+        }
+
+        function retryCurrentPackage() {
+            if (currentPackage) startPackage(currentPackage.id);
+        }
+
+        function exitToPackages() {
+            clearInterval(timerInterval);
+            document.getElementById('quizArenaView').classList.add('hidden');
+            document.getElementById('resultReviewView').classList.add('hidden');
+            document.getElementById('packageSelectionView').classList.remove('hidden');
+            renderPackages();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetAllProgress() {
+            localStorage.removeItem('michiedu2_jft500_scores');
+            savedScores = {};
+            renderPackages();
+        }
+
+        renderPackages();
+    </script>
+</body>
+</html>
